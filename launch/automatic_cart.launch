@@ -1,0 +1,5 @@
+<launch>
+	<!-- My Package launch file -->
+	<node pkg="automatic_cart" type="first_program" name="HelloWorld" output="screen">
+	</node>
+</launch>
