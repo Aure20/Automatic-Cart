@@ -2,6 +2,8 @@ from PIL import Image
 import numpy as np
 import networkx as nx
 from itertools import permutations
+import json 
+import random
 
 def get_neighbours(x: int, y: int, adjacency_8: bool) -> np.array:
     """Return the 4/8 neighbours of a coordinate.
@@ -46,19 +48,54 @@ def find_section_from_color(section_colors, color_array):
             return section
     return None  # Return None if no match is found
 
+def map_evenly(coords, items):
+    # Shuffle the first array to ensure random distribution
+    random.shuffle(items)
+
+    # Determine the amount of items each node gets
+    steps = np.linspace(0,len(items), len(coords)+1)
+    steps = list(map(round, steps))
+
+    # Create a dictionary to store the mappings
+    mapping = {}
+
+    # Map elements from the second array to the first array
+    for i in range(len(coords)):
+        mapping.update({coords[i]:items[steps[i]:steps[i+1]]})
+
+    return mapping
+
+
 def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,list):
     graph = nx.Graph()
     wrong_colors = []
+    section_coordinates = {}
     for row in range(image.shape[0]):
         for col in range(image.shape[1]):
             color = image[row,col]
-            if any(all(color==curr_color) for curr_color in map_colors.values()):
+            if any(all(color==curr_color) for curr_color in map_colors.values()): #Assign section and item to node
                 section = find_section_from_color(map_colors, color)
+                try:
+                    section_coordinates[section].append((row,col))
+                except KeyError:
+                    section_coordinates.update({section:[(row,col)]})
                 graph.add_node((row,col), section = section)
             elif not any(all(color==curr_color) for curr_color in other_colors.values()):
                 wrong_colors.append((row,col))
+    
+    #Now evenly add the items to the correct section and then to the nodes
+    with open('supermarket_items.json') as f:
+        items = json.load(f)
+    mapping = {}
+    for key in section_coordinates.keys():
+        try:
+            item_names = items[key]
+        except KeyError:
+            continue
+        coords = section_coordinates[key]
+        mapping.update(map_evenly(coords,item_names))
+    nx.set_node_attributes(graph, mapping, 'item')
     return graph,wrong_colors
-
 
 def draw_path(image: np.array, paths: list, filepath = ''):
     """Draws a given path on the map
@@ -75,22 +112,59 @@ def draw_path(image: np.array, paths: list, filepath = ''):
             im[node_coords[0], node_coords[1], :] = colors[i]
     im = Image.fromarray(im)
     im = im.resize((1000,1000), resample=Image.BOX)
-    if filepath == '':
+    if len(filepath) == 0:
         im.show()
     else:
         im.save(fp=filepath)
 
-def hamiltonian_path(graph: nx.Graph, coordinates:np.array) -> (np.array,float):    
-    """Given a list of nodes finds the shortest path along the graph that visits all these nodes, for more than 11 nodes
+def get_coordinates(shopping_list: list, graph: nx.Graph, with_start=True)->list:
+    """Given a list of items, returns the corresponding coordinates where they are located
+
+    Args:
+        shopping_list (list): List of items to buy
+        graph (nx.Graph): Supermarket Graph
+        with_start (bool, optional): Defines if we want to include the entrance and exit of the 
+        supermarket at the start/end of the path. Defaults to True.
+
+    Returns:
+        list: List of coordinates in the same order as the shopping list
+    """
+    coordinates = [(0,0)]*len(shopping_list)
+    start_coord = (0,0)
+    end_coord = (0,0)
+    for coord,attributes in graph.nodes(data = True): 
+        if attributes['section'] == 'Start':
+            start_coord = coord
+            continue
+        if attributes['section'] == 'End':
+            end_coord = coord
+            continue
+        try:
+            shelf = attributes['item']
+        except KeyError:
+            continue
+        for item in shelf:
+            if item in shopping_list:
+                idx = shopping_list.index(item)
+                coordinates[idx] = coord
+    if with_start:
+        coordinates.insert(0,start_coord)
+        coordinates.append(end_coord)
+
+    return coordinates
+
+def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):    
+    """Given a list of items finds the shortest path along the supermarket that visits all these items, for more than 11 nodes
     it will compute an approximation. That the path will always start from the first element of the coordinates and end in the last
 
     Args:
         graph (nx.Graph): Networkx graph used to run the subroutines
-        int (np.array): List of coordinates to visit
+        int (np.array): List of items to visit
 
     Returns:
         (np.array,int): Returns a numpy array containing the order in which the nodes are visited and the length of the path
     """
+    coordinates = get_coordinates(items, graph)
     adj_mat = np.empty((len(coordinates),len(coordinates)), dtype = np.float16)
     for i,node_coords in enumerate(coordinates):
         lengths = nx.single_source_dijkstra_path_length(graph,node_coords)
@@ -192,3 +266,4 @@ def create_graph(image: np.array,  section_colors: dict, walkable_colors: dict, 
                             else:
                                 graph.add_edge(node_coords,(n_row,n_col), weight = scale)
     return graph
+
