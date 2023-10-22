@@ -80,7 +80,7 @@ def draw_path(image: np.array, paths: list, filepath = ''):
     else:
         im.save(fp=filepath)
 
-def bestHPath(graph: nx.Graph, coordinates:np.array) -> (np.array,float):    
+def hamiltonian_path(graph: nx.Graph, coordinates:np.array) -> (np.array,float):    
     """Given a list of nodes finds the shortest path along the graph that visits all these nodes, for more than 11 nodes
     it will compute an approximation. That the path will always start from the first element of the coordinates and end in the last
 
