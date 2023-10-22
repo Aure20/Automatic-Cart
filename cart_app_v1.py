@@ -1,6 +1,7 @@
 import tkinter as tk
+import json
 
-class MyGUI:
+class MyGroceryListApp:
     
     def __init__(self):
         self.root = tk.Tk()
@@ -14,12 +15,13 @@ class MyGUI:
 
         self.create_menu()
         self.show_home()
+        self.load_items()
 
         self.root.mainloop()
 
     def add_item(self):
         item = self.item_entry.get()
-        if item:
+        if str(item) in self.suggestions:
             self.grocery_list.append(item)
             self.listbox.insert(tk.END, item)
             self.item_entry.delete(0, tk.END)
@@ -51,7 +53,7 @@ class MyGUI:
             self.current_frame.pack_forget()
         self.current_frame = tk.Frame(self.root)
         # Add widgets for the home screen
-        # Example: tk.Label(self.current_frame, text="Welcome to the Home Screen").pack()
+        tk.Label(self.current_frame, text="Welcome to your Shopping List", font=('Comic Sans MS', 16), pady=100).pack()
         self.current_frame.pack()
 
     def show_grocery_list(self):
@@ -61,23 +63,31 @@ class MyGUI:
 
                 
         # Entry field for adding items
-        self.item_entry = tk.Entry(self.root)
+        self.item_entry = tk.Entry(self.root, width=50)
         self.item_entry.pack(pady=10)
+        self.item_entry.bind("<KeyRelease>", self.update_suggestions)
+        self.item_entry.bind("<KeyPress>", self.shortcut)
+
+        self.suggestion_label = tk.Label(self.root)
+        self.suggestion_label.pack()
 
         # Buttons for adding and removing items
-        self.add_button = tk.Button(self.root, text="Add Item", command=self.add_item)
+        self.add_button = tk.Button(self.root, text="Add Item", font=('Comic Sans MS', 12), command=self.add_item)
         self.add_button.pack()
 
-        self.remove_button = tk.Button(self.root, text="Remove Item", command=self.remove_item)
+        self.remove_button = tk.Button(self.root, text="Remove Item", font=('Comic Sans MS', 12), command=self.remove_item)
         self.remove_button.pack()
 
         # Listbox to display the grocery items
-        self.listbox = tk.Listbox(self.root)
+        self.listbox = tk.Listbox(self.root, width=50)
         self.listbox.pack()
         
         # Add widgets for the grocery list screen
         # Example: tk.Label(self.current_frame, text="Your Grocery List:").pack()
         self.current_frame.pack()
+
+
+        # ¡¡¡make sure you can't add more of the same screen!!!
 
     def show_other_screen(self):
         if self.current_frame:
@@ -87,5 +97,22 @@ class MyGUI:
         # Example: tk.Label(self.current_frame, text="This is another screen").pack()
         self.current_frame.pack()
     
+    def load_items(self):
+        with open("C:/Users/lukas/Documents/I-Tech/UPC/CIR/supermarket_items.json", "r") as file:
+            data = json.load(file)
+            self.supermarket_items = data.get("items", [])
 
-MyGUI()
+    def update_suggestions(self, event):
+        user_input = self.item_entry.get().strip().lower()
+        self.suggestions = [item.lower() for item in self.supermarket_items if user_input in item.lower()]
+
+        if user_input and self.suggestions:
+            self.suggestion_label.config(text="Suggestions: " + ", ".join(self.suggestions))
+        else:
+            self.suggestion_label.config(text="")
+
+    def shortcut(self, event):
+        if event.state == 4 and event.keysym == "Return":
+            self.add_item()
+
+MyGroceryListApp()
