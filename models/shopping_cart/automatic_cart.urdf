@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="automatic_cart">
 
-
+  <!-- Robot Body -->
   <material name="black">
     <color rgba="0 0 0 1"/>
   </material>
@@ -52,6 +52,8 @@
     <origin xyz="0.0 0.0 0.4"/>
   </joint>
   
+  
+  <!-- Wheels -->
   <link name="right_wheel">
     <visual>
       <origin rpy="0 1.57075 0" xyz="0 0 0"/>
@@ -129,5 +131,12 @@
     <child link="front_wheel"/>
     <origin rpy="0 0 0" xyz="0 0.2 -0.15"/>
   </joint>
+  
+  <!-- Gazebo plugin for ROS Control -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
 
 </robot>
