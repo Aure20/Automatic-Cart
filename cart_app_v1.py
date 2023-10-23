@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import json
 
 class MyGroceryListApp:
@@ -107,9 +108,17 @@ class MyGroceryListApp:
         self.suggestions = [item.lower() for item in self.supermarket_items if user_input in item.lower()]
 
         if user_input and self.suggestions:
-            self.suggestion_label.config(text="Suggestions: " + ", ".join(self.suggestions))
+        #     self.suggestion_label.config(text="Suggestions: " + ", ".join(self.suggestions))
+        # else:
+        #     self.suggestion_label.config(text="")
+            self.suggestion_combobox = ttk.Combobox(self.current_frame, values=self.suggestions)
+            self.suggestion_combobox.set(self.suggestions[0])
+            self.suggestion_combobox.pack()
         else:
-            self.suggestion_label.config(text="")
+            # Hide the Combobox if no suggestions
+            if hasattr(self, "suggestion_combobox"):
+                self.suggestion_combobox.pack_forget()
+    
 
     def shortcut(self, event):
         if event.state == 4 and event.keysym == "Return":
