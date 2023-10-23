@@ -98,7 +98,7 @@ class MyGroceryListApp:
         self.current_frame.pack()
     
     def load_items(self):
-        with open("C:/Users/lukas/Documents/I-Tech/UPC/CIR/supermarket_items.json", "r") as file:
+        with open("ImageToGraph/supermarket_items.json", "r") as file:
             data = json.load(file)
             self.supermarket_items = data.get("items", [])
 
