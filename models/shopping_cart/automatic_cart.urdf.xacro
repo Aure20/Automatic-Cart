@@ -84,7 +84,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
     <joint name="base_to_basket">
-      <hardwareInterface>PositionJointInterface</hardwareInterface>
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
   </transmission>
   
@@ -134,7 +134,7 @@
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
       <joint name="${prefix}_wheel_joint">
-        <hardwareInterface>VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
     </transmission>
   </xacro:macro>
@@ -184,7 +184,7 @@
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
       <joint name="${prefix}_front_wheel_joint">
-        <hardwareInterface>VelocityJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
     </transmission>
    </xacro:macro>
