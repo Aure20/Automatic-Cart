@@ -15,3 +15,15 @@ See odometry:
 `rostopic list`
 `rostopic echo /cart_diff_drive_controller/odom`
 
+Following the structure of Turtlebot3:
+
+Open a world with the robot:
+`roslaunch automatic_cart cart_house.launch`
+`roslaunch automatic_cart cart_world.launch`
+
+Open SLAM:
+`roslaunch automatic_cart cart_slam.launch slam_methods:=gmapping`
+
+Open telemetry aside:
+`roslaunch automatic_cart cart_telemetry.launch`
+

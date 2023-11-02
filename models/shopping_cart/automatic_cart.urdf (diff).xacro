@@ -311,5 +311,31 @@
       </imu>
     </plugin>
   </gazebo>
+  
+  <!-- Cart controller -->
+  <gazebo>
+    <plugin name="cart_diff_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+    <commandTopic>cmd_vel</commandTopic>
+	<odometryTopic>odom</odometryTopic>
+	<odometryFrame>odom</odometryFrame>
+	<odometrySource>world</odometrySource>
+	<publishOdomTF>true</publishOdomTF>
+	<robotBaseFrame>base_footprint</robotBaseFrame>
+	<publishWheelTF>false</publishWheelTF>
+	<publishTf>true</publishTf>
+	<publishWheelJointState>true</publishWheelJointState>
+	<legacyMode>false</legacyMode>
+	<updateRate>30</updateRate>
+	<leftFrontJoint>left_front_wheel_joint</leftFrontJoint>
+    	<rightFrontJoint>right_front_wheel_joint</rightFrontJoint>
+    	<leftRearJoint>left_wheel_joint</leftRearJoint>
+    	<rightRearJoint>right_wheel_joint</rightRearJoint>
+	<wheelSeparation>${xwheel*2}</wheelSeparation>
+	<wheelDiameter>${wheelrad*2}</wheelDiameter>
+	<wheelAcceleration>1</wheelAcceleration>
+	<wheelTorque>10</wheelTorque>
+	<rosDebugLevel>na</rosDebugLevel>
+  </plugin>
+  </gazebo>
 
 </robot>

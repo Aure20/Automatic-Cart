@@ -1,9 +1,4 @@
 # The joint state controller handles publishing transforms for any moving joints
 type: "joint_state_controller/JointStateController"
-publish_rate: 50
+publish_rate: 30
 
-gazebo_ros_control/pid_gains/base_to_basket: {p: 100.0, i: 0.01, d: 10.0}
-gazebo_ros_control/pid_gains/right_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
-gazebo_ros_control/pid_gains/left_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
-gazebo_ros_control/pid_gains/right_front_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
-gazebo_ros_control/pid_gains/left_front_wheel_joint: {p: 100.0, i: 0.01, d: 10.0}
