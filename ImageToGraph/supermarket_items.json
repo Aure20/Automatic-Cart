@@ -1,5 +1,5 @@
 {
-    "items": [
+  "Meat": [
       "Ground beef",
       "Chicken breasts",
       "Pork chops",
@@ -49,7 +49,9 @@
       "Lamb shanks",
       "Beef liver",
       "Rabbit stew",
-      "Kangaroo steak",
+      "Kangaroo steak"
+  ],
+  "Bakery": [
       "Baguette",
       "Croissants",
       "Whole wheat bread",
@@ -99,7 +101,9 @@
       "Olive bread",
       "Fruitcake",
       "Amish bread",
-      "Lemon bars",
+      "Lemon bars"
+  ],
+  "Dairy": [
       "Eggs",
       "Milk",
       "Butter",
@@ -148,7 +152,9 @@
       "Greek yogurt",
       "Kefir",
       "Ice cream",
-      "Frozen yogurt",
+      "Frozen yogurt"
+  ],
+  "Frozen": [
       "Frozen peas",
       "Frozen corn",
       "Frozen broccoli",
@@ -198,7 +204,9 @@
       "Frozen mussels",
       "Frozen crawfish",
       "Frozen crab legs",
-      "Frozen oysters",
+      "Frozen oysters"
+  ],
+  "Seafood": [
       "Shrimp",
       "Salmon",
       "Tuna",
@@ -248,7 +256,9 @@
       "Herring",
       "Hoki",
       "Blackfish",
-      "Wolffish",
+      "Wolffish"
+  ],
+  "Produce": [
       "Apples",
       "Bananas",
       "Oranges",
@@ -298,7 +308,9 @@
       "Butternut squash",
       "Acorn squash",
       "Pumpkins",
-      "Artichokes",
+      "Artichokes"
+  ],
+  "Tools": [
       "Aluminum foil",
       "Plastic wrap",
       "Ziplock bags",
@@ -348,7 +360,9 @@
       "Rolling tray",
       "Nutcracker",
       "Strainer",
-      "Pastry brush",
+      "Pastry brush"
+  ],
+  "Drinks": [
       "Water",
       "Soda",
       "Juice",
@@ -398,72 +412,6 @@
       "Vodka",
       "Rum",
       "Tequila",
-      "Gin",
-      "Peanuts",
-      "Cooking oil",
-      "Rice",
-      "Pasta",
-      "Canned tomatoes",
-      "Cereal",
-      "Flour",
-      "Sugar",
-      "Honey",
-      "Maple syrup",
-      "Oats",
-      "Granola",
-      "Pancake mix",
-      "Bread crumbs",
-      "Baking powder",
-      "Baking soda",
-      "Yeast",
-      "Salt",
-      "Black pepper",
-      "Garlic powder",
-      "Onion powder",
-      "Cinnamon",
-      "Nutmeg",
-      "Allspice",
-      "Vanilla extract",
-      "Chocolate chips",
-      "Dried fruits",
-      "Nuts",
-      "Canned beans",
-      "Peanut butter",
-      "Almond butter",
-      "Cashew butter",
-      "Jelly",
-      "Syrup",
-      "Hot sauce",
-      "Ketchup",
-      "Mustard",
-      "Mayonnaise",
-      "Salad dressing",
-      "Soy sauce",
-      "Teriyaki sauce",
-      "BBQ sauce",
-      "Worcestershire sauce",
-      "Salsa",
-      "Pickles",
-      "Olives",
-      "Canned vegetables",
-      "Tomato sauce",
-      "Canned fruit",
-      "Canned soup",
-      "Macaroni and cheese",
-      "Instant ramen",
-      "Cereal bars",
-      "Popcorn",
-      "Potato chips",
-      "Tortilla chips",
-      "Pretzels",
-      "Crackers",
-      "Cookies",
-      "Candy",
-      "Mints",
-      "Gum",
-      "Energy bars",
-      "Protein bars",
-      "Granola bars"
-    ]
-  }
-  
+      "Gin"
+  ]
+}

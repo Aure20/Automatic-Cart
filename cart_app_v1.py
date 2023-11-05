@@ -13,6 +13,7 @@ class MyGroceryListApp:
         self.root.title("Supermarket Cart")
 
         self.current_frame = None # store the current frame
+        self.frames = {}
 
         self.create_menu()
         self.show_home()
@@ -45,23 +46,20 @@ class MyGroceryListApp:
 
         file_menu.add_command(label="Home", command=self.show_home)
         file_menu.add_command(label="Grocery List", command=self.show_grocery_list)
-        file_menu.add_command(label="Route", command=self.show_other_screen)
+        file_menu.add_command(label="Route", command=self.show_route)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
 
     def show_home(self):
-        if self.current_frame:
-            self.current_frame.pack_forget()
-        self.current_frame = tk.Frame(self.root)
+        self.switch_frame("Home")
         # Add widgets for the home screen
-        tk.Label(self.current_frame, text="Welcome to your Shopping List", font=('Comic Sans MS', 16), pady=100).pack()
-        self.current_frame.pack()
+        tk.Label(self.frames["Home"], text="Welcome to your Shopping List", font=('Comic Sans MS', 16), pady=100).pack()
+        # self.current_frame.pack()
 
     def show_grocery_list(self):
-        if self.current_frame:
-            self.current_frame.pack_forget()
+        self.switch_frame("GroceryList")
         self.current_frame = tk.Frame(self.root)
-
+        tk.Label(self.frames["GroceryList"], text="Your Grocery List:").pack()
                 
         # Entry field for adding items
         self.item_entry = tk.Entry(self.root, width=50)
@@ -90,38 +88,45 @@ class MyGroceryListApp:
 
         # ¡¡¡make sure you can't add more of the same screen!!!
 
-    def show_other_screen(self):
-        if self.current_frame:
-            self.current_frame.pack_forget()
-        self.current_frame = tk.Frame(self.root)
+    def show_route(self):
+        self.switch_frame("Route")
+        # self.current_frame = tk.Frame(self.root)
         # Add widgets for the other screen
-        # Example: tk.Label(self.current_frame, text="This is another screen").pack()
+        tk.Label(self.frames["Route"], text="Route", font=('Comic Sans MS', 16), pady=100).pack()
         self.current_frame.pack()
     
     def load_items(self):
         with open("ImageToGraph/supermarket_items.json", "r") as file:
             data = json.load(file)
-            self.supermarket_items = data.get("items", [])
-
+            self.supermarket_items = [item for category in data.values() for item in category]
+            
     def update_suggestions(self, event):
         user_input = self.item_entry.get().strip().lower()
         self.suggestions = [item.lower() for item in self.supermarket_items if user_input in item.lower()]
 
         if user_input and self.suggestions:
-        #     self.suggestion_label.config(text="Suggestions: " + ", ".join(self.suggestions))
-        # else:
-        #     self.suggestion_label.config(text="")
-            self.suggestion_combobox = ttk.Combobox(self.current_frame, values=self.suggestions)
-            self.suggestion_combobox.set(self.suggestions[0])
-            self.suggestion_combobox.pack()
-        else:
-            # Hide the Combobox if no suggestions
-            if hasattr(self, "suggestion_combobox"):
-                self.suggestion_combobox.pack_forget()
+            # Use a Listbox to display clickable suggestions
+            if hasattr(self, "suggestion_listbox"):
+                self.suggestion_listbox.destroy()
+            self.suggestion_listbox = tk.Listbox(self.current_frame, selectmode=tk.SINGLE, height=len(self.suggestions))
+            self.suggestion_listbox.pack()
+            for suggestion in self.suggestions:
+                self.suggestion_listbox.insert(tk.END, suggestion)
+            self.suggestion_listbox.bind("<ButtonRelease-1>", self.add_suggestion)
     
 
     def shortcut(self, event):
         if event.state == 4 and event.keysym == "Return":
             self.add_item()
+
+    def switch_frame(self, frame_name):
+        new_frame = self.frames.get(frame_name)
+        if self.current_frame:
+            self.current_frame.pack_forget()
+        if not new_frame:
+            new_frame = tk.Frame(self.root)
+            self.frames[frame_name] = new_frame
+        self.current_frame = new_frame
+        self.current_frame.pack()
 
 MyGroceryListApp()
