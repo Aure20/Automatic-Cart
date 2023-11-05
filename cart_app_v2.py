@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import json
+import random # for testing purposes of the route page
 
 class MyGroceryListApp:
 
@@ -10,14 +11,16 @@ class MyGroceryListApp:
         self.menubar = tk.Menu(self.root)
         self.grocery_list = []
 
+        # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
-        self.home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 12))
-        self.home_lb.grid(pady=20)
+        self.home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
+        self.home_lb.grid(padx=40, pady=20)
 
+        # Shopping list page
         self.list_page = Frame(self.root)
         self.list_page.grid(row=0, column=0, sticky="nsew")
-        self.list_lb = Label(self.list_page, text="", font=('Comic Sans MS', 12))
+        self.list_lb = Label(self.list_page, text="")
         self.list_lb.grid(pady=0)
 
         self.item_entry = tk.Entry(self.list_page, width=20)
@@ -26,19 +29,30 @@ class MyGroceryListApp:
 
         self.suggestions_listbox = tk.Listbox(self.list_page, width=20)
         self.suggestions_listbox.grid(row=0, column=1, padx=10, pady=10)
-        self.suggestions_listbox.bind("<Double-Button-1>", self.add_suggestion_to_list)
 
-        self.listbox = tk.Listbox(self.list_page, width=30)
-        self.listbox.grid(row=1, column=0, columnspan=1, padx=20, pady=10)
+        self.suggestions_scrollbar = tk.Scrollbar(self.list_page, orient=tk.VERTICAL, command=self.suggestions_listbox.yview)
+        self.suggestions_scrollbar.grid(row=0, column=2, sticky='ns')
+        self.suggestions_listbox.config(yscrollcommand=self.suggestions_scrollbar.set)
 
-        self.route_page = Frame(self.root)
+        self.suggestions_listbox.bind("<Double-Button-1>", self.add_suggestion_to_list) # double click to add item to shopping list
+
+        self.listbox = tk.Listbox(self.list_page, width=20)
+        self.listbox.grid(row=1, column=0, columnspan=1, padx=5, pady=10)
+
+        # Route page
+        self.route_page = Frame(self.root) 
         self.route_page.grid(row=0, column=0, sticky="nsew")
-        self.route_lb = Label(self.route_page, text="Your Route", font=('Comic Sans MS', 12))
-        self.route_lb.grid(pady=20)
+        self.route_lb = Label(self.route_page, text="Your Route", font=('Comic Sans MS', 10))
+        self.route_lb.grid(row=0, column=0, padx=120, pady=20)
 
-        self.home_page.tkraise()
+        self.next_item_label = Label(self.route_page, text="")
+        self.next_item_label.grid(row=1, column=0, pady=20)
 
-        self.root.geometry("500x500")
+        
+
+        self.home_page.tkraise() # start at home page
+
+        self.root.geometry("300x500")
         self.root.title("Supermarket Cart")
         self.root.resizable(False, False)
 
@@ -76,7 +90,15 @@ class MyGroceryListApp:
 
     def update_shopping_list(self):
         self.listbox.delete(0, tk.END)
-        for item in self.grocery_list:
-            self.listbox.insert(tk.END, item)
+        for index, item in enumerate(self.grocery_list, start=1):
+            self.listbox.insert(tk.END, f"{index}. {item}")
+
+        # Update the next item on the route page
+        
+        if self.grocery_list:
+            next_item = random.choice(self.grocery_list)
+            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+        else:
+            self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
 MyGroceryListApp()
