@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 import json
 
@@ -105,15 +106,29 @@ class MyGroceryListApp:
         self.suggestions = [item.lower() for item in self.supermarket_items if user_input in item.lower()]
 
         if user_input and self.suggestions:
-            # Use a Listbox to display clickable suggestions
-            if hasattr(self, "suggestion_listbox"):
-                self.suggestion_listbox.destroy()
-            self.suggestion_listbox = tk.Listbox(self.current_frame, selectmode=tk.SINGLE, height=len(self.suggestions))
+            # Create a separate frame for the suggestion list
+            if hasattr(self, "suggestion_frame"):
+                self.suggestion_frame.destroy()
+            self.suggestion_frame = tk.Frame(self.root)
+            self.suggestion_frame.pack()
+
+            # Use a Listbox to display clickable suggestions within the suggestion frame
+            self.suggestion_listbox = tk.Listbox(self.suggestion_frame, selectmode=tk.SINGLE, height=len(self.suggestions))
             self.suggestion_listbox.pack()
             for suggestion in self.suggestions:
                 self.suggestion_listbox.insert(tk.END, suggestion)
-            self.suggestion_listbox.bind("<ButtonRelease-1>", self.add_suggestion)
+                self.suggestion_listbox.bind("<ButtonRelease-1>", self.add_suggestion)
+
     
+    def add_suggestion(self, event):
+        selected_index = self.suggestion_listbox.curselection()
+        if selected_index:
+            index = selected_index[0]
+            suggestion = self.suggestion_listbox.get(index)
+            self.item_entry.delete(0, tk.END)  # Clear the entry field
+            self.item_entry.insert(0, suggestion)  # Set the selected suggestion as the input
+
+
 
     def shortcut(self, event):
         if event.state == 4 and event.keysym == "Return":
