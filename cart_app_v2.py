@@ -39,6 +39,9 @@ class MyGroceryListApp:
         self.listbox = tk.Listbox(self.list_page, width=20)
         self.listbox.grid(row=1, column=0, columnspan=1, padx=5, pady=10)
 
+        self.listbox.bind("<Double-Button-1>", self.delete_item) # double click to add item to shopping list
+
+
         # Route page
         self.route_page = Frame(self.root) 
         self.route_page.grid(row=0, column=0, sticky="nsew")
@@ -86,6 +89,12 @@ class MyGroceryListApp:
         selected_suggestion = self.suggestions_listbox.get(self.suggestions_listbox.curselection())
         if selected_suggestion:
             self.grocery_list.append(selected_suggestion)
+            self.update_shopping_list()
+
+    def delete_item(self, event):
+        selected_item = self.listbox.get(self.listbox.curselection())
+        if selected_item:
+            self.grocery_list.remove(selected_item)
             self.update_shopping_list()
 
     def update_shopping_list(self):
