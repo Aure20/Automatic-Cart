@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
 import json
 import random # for testing purposes of the route page
 
@@ -8,8 +7,8 @@ class MyGroceryListApp:
 
     def __init__(self):
         self.root = tk.Tk()
-        self.menubar = tk.Menu(self.root)
-        self.grocery_list = []
+        self.menubar = tk.Menu(self.root) # create a menu
+        self.grocery_list = [] # start with an empty shopping list
 
         # Home page
         self.home_page = Frame(self.root)
@@ -23,23 +22,26 @@ class MyGroceryListApp:
         self.list_lb = Label(self.list_page, text="")
         self.list_lb.grid(pady=0)
 
-        self.item_entry = tk.Entry(self.list_page, width=20)
+        self.item_entry = tk.Entry(self.list_page, width=20) # create an input field
         self.item_entry.grid(row=0, column=0, padx=0, pady=0)
-        self.item_entry.bind("<KeyRelease>", self.update_suggestions)
+        self.item_entry.bind("<KeyRelease>", self.update_suggestions) # show suggestions during typing
 
         self.suggestions_listbox = tk.Listbox(self.list_page, width=20)
         self.suggestions_listbox.grid(row=0, column=1, padx=10, pady=10)
 
         self.suggestions_scrollbar = tk.Scrollbar(self.list_page, orient=tk.VERTICAL, command=self.suggestions_listbox.yview)
-        self.suggestions_scrollbar.grid(row=0, column=2, sticky='ns')
+        self.suggestions_scrollbar.grid(row=0, column=2, padx=0, sticky='ns')
         self.suggestions_listbox.config(yscrollcommand=self.suggestions_scrollbar.set)
 
-        self.suggestions_listbox.bind("<Double-Button-1>", self.add_suggestion_to_list) # double click to add item to shopping list
+        self.suggestions_listbox.bind("<Double-1>", self.add_suggestion_to_list) # double click to add item to shopping list
 
         self.listbox = tk.Listbox(self.list_page, width=20)
         self.listbox.grid(row=1, column=0, columnspan=1, padx=5, pady=10)
 
-        self.listbox.bind("<Double-Button-1>", self.delete_item) # double click to add item to shopping list
+        self.listbox.bind("<Double-1>", self.delete_item) # double click to add item to shopping list
+
+        self.save_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.save_shopping_list)
+        self.save_button.grid(row=1, column=1)
 
 
         # Route page
@@ -92,7 +94,7 @@ class MyGroceryListApp:
             self.update_shopping_list()
 
     def delete_item(self, event):
-        selected_item = self.listbox.get(self.listbox.curselection())
+        selected_item = self.listbox.get(self.listbox.curselection())[3:] # the first part of the string is a number, a dot and a space
         if selected_item:
             self.grocery_list.remove(selected_item)
             self.update_shopping_list()
@@ -109,5 +111,9 @@ class MyGroceryListApp:
             self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
+
+    def save_shopping_list(self):
+        with open("grocery_list.json", "w") as file:
+            json.dump(self.grocery_list, file)
 
 MyGroceryListApp()
