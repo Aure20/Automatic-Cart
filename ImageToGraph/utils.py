@@ -285,19 +285,30 @@ def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,np.array,floa
 
         return items,path, path_len
 
-def create_graph(image: np.array,  section_colors: dict, walkable_colors: dict, other_colors:dict, scale = 1) -> nx.Graph:
+def create_graph(image: np.array, scale = 1) -> nx.Graph:
     """Given an image of an indoor space returns a networkx graph representing the image
 
     Args:
-        image (np.array): Input image
-        section_colors (dict): Dicitonary of the colors of the various sections of the supermarkets.
-        walkable_colors (dict): Colors of the areas where people are able to walk, ideally add different color for the entrance and exit
-        other_colors (dict): Colors like walls and the area outside of the supermarket, these colors won't be checked
+        imagedir (np.array): Input imge as array
         scale (int, optional): How many meters does a pixel represent, distances will be measured in meters. Defaults to 1.
 
     Returns:
         nx.Graph: Graph representing the supermarket
+    
+        section_colors (dict): Dicitonary of the colors of the various sections of the supermarkets.
+        walkable_colors (dict): Colors of the areas where people are able to walk, ideally add different color for the entrance and exit
+        other_colors (dict): Colors like walls and the area outside of the supermarket, these colors won't be checked
+        Static colors in the image, should follow pattern.
     """
+    section_colors = {'Meat': [255,126,121],'Bakery': [252,168,78],'Dairy' : [250,225,80],
+                    'Frozen' : [78,235,239],'Seafood' : [80,156,218], 'Produce' : [148,214,105],
+                    'Tools': [172,165,142],'Drinks' : [132,92,85],'Grocery' : [124,124,124]}
+
+    walkable_colors = {'Path': [255,255,255],'Start': [237,0,255],'End': [255,0,137]}
+
+    other_colors = {'Wall': [70,70,70],'Background' : [155,173,183]}
+
+
     graph,wrong_coords = get_nodes(image, {**section_colors,**walkable_colors}, other_colors)
     assert len(wrong_coords)==0, f'The image contains some colors not specified on the color list at coordinates:{wrong_coords}' 
     assert len(section_colors)>0, 'You need at least one color for the section_colors'
