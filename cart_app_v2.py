@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 import json
 import random # for testing purposes of the route page
+import ImageToGraph.utils
 
 class MyGroceryListApp:
 
@@ -9,7 +10,8 @@ class MyGroceryListApp:
         self.root = tk.Tk()
         self.menubar = tk.Menu(self.root) # create a menu
         self.grocery_list = [] # start with an empty shopping list
-
+        # ADD: supermarket selection
+        # ADD: 
         # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
