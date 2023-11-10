@@ -107,7 +107,7 @@ def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,l
                 wrong_colors.append((row,col))
     
     #Now evenly add the items to the correct section and then to the nodes
-    with open('supermarket_items.json') as f:
+    with open('ImageToGraph/supermarket_items.json') as f:
         items = json.load(f)
     mapping = {}
     for key in section_coordinates.keys():
@@ -294,11 +294,12 @@ def create_graph(image: np.array, scale = 1) -> nx.Graph:
 
     Returns:
         nx.Graph: Graph representing the supermarket
-    
+    """
+    """
+        Static colors in the image, should follow pattern:
         section_colors (dict): Dicitonary of the colors of the various sections of the supermarkets.
         walkable_colors (dict): Colors of the areas where people are able to walk, ideally add different color for the entrance and exit
         other_colors (dict): Colors like walls and the area outside of the supermarket, these colors won't be checked
-        Static colors in the image, should follow pattern.
     """
     section_colors = {'Meat': [255,126,121],'Bakery': [252,168,78],'Dairy' : [250,225,80],
                     'Frozen' : [78,235,239],'Seafood' : [80,156,218], 'Produce' : [148,214,105],

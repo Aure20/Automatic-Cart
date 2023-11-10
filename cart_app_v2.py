@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import *
 import json
 import random # for testing purposes of the route page
-import ImageToGraph.utils
+from ImageToGraph.utils import *
 
 class MyGroceryListApp:
 
@@ -10,8 +10,23 @@ class MyGroceryListApp:
         self.root = tk.Tk()
         self.menubar = tk.Menu(self.root) # create a menu
         self.grocery_list = [] # start with an empty shopping list
-        # ADD: supermarket selection
-        # ADD: 
+
+        dir = 'ImageToGraph/'
+        imagedir = dir+'Model2.png'
+        image = np.array(Image.open(imagedir).convert('RGB')) #Remember that it reads row by row
+        image = image[10:210,10:210,:] #Keep only the superkarmet plan inside the frame
+        #node_image = image.reshape(-1,3) #Reshape the image shuch that the inidices are 1D
+        self.graph = create_graph(image)
+
+        start = (90,66)
+        end = (117,129)
+        #Note, I am providing the index from aseprite and converting it to the numpy one
+        #start = (start[1] - 10, start[0] - 10)
+        #end = (end[1] - 10, end[0] - 10)
+        path = nx.dijkstra_path(self.graph, start, end)
+        draw_path(image, [path])
+
+
         # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
