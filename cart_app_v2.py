@@ -14,17 +14,11 @@ class MyGroceryListApp:
         dir = 'ImageToGraph/'
         imagedir = dir+'Model2.png'
         image = np.array(Image.open(imagedir).convert('RGB')) #Remember that it reads row by row
-        image = image[10:210,10:210,:] #Keep only the superkarmet plan inside the frame
+        self.image = image[10:210,10:210,:] #Keep only the supermarket plan inside the frame
         #node_image = image.reshape(-1,3) #Reshape the image shuch that the inidices are 1D
-        self.graph = create_graph(image)
+        self.graph = create_graph(self.image)
+        
 
-        start = (90,66)
-        end = (117,129)
-        #Note, I am providing the index from aseprite and converting it to the numpy one
-        #start = (start[1] - 10, start[0] - 10)
-        #end = (end[1] - 10, end[0] - 10)
-        path = nx.dijkstra_path(self.graph, start, end)
-        draw_path(image, [path])
 
 
         # Home page
@@ -32,6 +26,10 @@ class MyGroceryListApp:
         self.home_page.grid(row=0, column=0, sticky="nsew")
         self.home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
         self.home_lb.grid(padx=40, pady=20)
+
+        self.map_image = PhotoImage(file=dir+'Model2.png')
+        self.map_image_lb = tk.Label(self.home_page, image=self.map_image)
+        self.map_image_lb.grid()
 
         # Shopping list page
         self.list_page = Frame(self.root)
@@ -57,7 +55,7 @@ class MyGroceryListApp:
 
         self.listbox.bind("<Double-1>", self.delete_item) # double click to add item to shopping list
 
-        self.save_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.save_shopping_list)
+        self.save_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.get_shopping_list)
         self.save_button.grid(row=1, column=1)
 
 
@@ -129,8 +127,19 @@ class MyGroceryListApp:
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
-    def save_shopping_list(self):
-        with open("grocery_list.json", "w") as file:
-            json.dump(self.grocery_list, file)
+    def get_shopping_list(self):
+        # with open("grocery_list.json", "w") as file:
+        #     json.dump(self.grocery_list, file)
+        print(self.grocery_list)
+        items, coordinates, length = hamiltonian_path(self.graph, list(set(self.grocery_list)))
+        print(items)
+
+        paths = [nx.dijkstra_path(self.graph, coordinates[i], coordinates[i+1]) for i in range(len(coordinates)-1)]
+        draw_path(self.image, paths)
+
+        return items
+
+
+        
 
 MyGroceryListApp()
