@@ -49,6 +49,17 @@ def find_section_from_color(section_colors, color_array):
     return None  # Return None if no match is found
 
 def map_evenly(coords, items):
+    """For each section receives the items that go into that section and the coordinates
+    of that section, afterwards evenly and randomly spreads the items across the various 
+    coordinates.
+
+    Args:
+        coords (list): List of all the available coords in the supermarket.
+        items (list): List of all the items to be place in there.
+
+    Returns:
+        dict: Returns a mapping between each coordinate and item to be placed there.
+    """
     # Shuffle the first array to ensure random distribution
     random.shuffle(items)
 
@@ -67,6 +78,18 @@ def map_evenly(coords, items):
 
 
 def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,list):
+    """Given an image and the colors for the various parts of the floorplan, return the graph
+    containing only the nodes at first, with already the items placed inside.
+
+    Args:
+        image (np.array): Input Image.
+        map_colors (dict): Colors that define the floorplan (both section and walkable).
+        other_colors(dict): Colors that are not used in the graph, used for assertion.
+
+    Returns:
+        (nx.Graph, list): The graph containing all the nodes with the items inside.
+        List of coordinates containing colors that are not supposed to be used.
+    """
     graph = nx.Graph()
     wrong_colors = []
     section_coordinates = {}
@@ -84,7 +107,7 @@ def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,l
                 wrong_colors.append((row,col))
     
     #Now evenly add the items to the correct section and then to the nodes
-    with open('supermarket_items.json') as f:
+    with open('ImageToGraph/supermarket_items.json') as f:
         items = json.load(f)
     mapping = {}
     for key in section_coordinates.keys():
@@ -97,19 +120,26 @@ def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,l
     nx.set_node_attributes(graph, mapping, 'item')
     return graph,wrong_colors
 
-def draw_path(image: np.array, paths: list, filepath = ''):
-    """Draws a given path on the map
+def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = False):
+    """Draws a given path on the map.
 
     Args:
-        image (np.array): Starting image
-        paths (list): A list of paths where each path is a list of nodes
+        image (np.array): Starting image.
+        paths (list): A list of paths where each path is a list of nodes.
         filepath (str, optional): Filepath where to save the resulting image, if '' then it will only show the image without saving. Defaults to ''.
+        star_pos_color (bool, optional): If true, draws the first pixel and its neighbourhood in red to know where you are located
     """
     im = image.copy()
     colors = [[c,c,c] for c in range(0,240,240//len(paths))] #Define the colors for the different sections of the path
     for i,path in enumerate(paths):
-        for node_coords in path[1:-1]:
+        for node_coords in path[1:-1]: #Doesn't color the start and the end
             im[node_coords[0], node_coords[1], :] = colors[i]
+        if i == 0 and star_pos_color:
+            start_neighbourhood = get_neighbours(path[0][0], path[0][1], True)
+            for node in start_neighbourhood:
+                if np.all(im[node[0], node[1], :] == 255) or np.all(im[node[0], node[1], :] == 0): #Color only if walkable or paht
+                    im[node[0], node[1], :] = [255,0,0] #Colors in red the neighbourhood of the starting pixel 
+            im[path[0][0], path[0][1], :] = [255,0,0]
     im = Image.fromarray(im)
     im = im.resize((1000,1000), resample=Image.BOX)
     if len(filepath) == 0:
@@ -118,12 +148,12 @@ def draw_path(image: np.array, paths: list, filepath = ''):
         im.save(fp=filepath)
 
 def get_coordinates(shopping_list: list, graph: nx.Graph, with_start=True)->list:
-    """Given a list of items, returns the corresponding coordinates where they are located
+    """Given a list of items, returns the corresponding coordinates where they are located.
 
     Args:
-        shopping_list (list): List of items to buy
-        graph (nx.Graph): Supermarket Graph
-        with_start (bool, optional): Defines if we want to include the entrance and exit of the 
+        shopping_list (list): List of items to buy.
+        graph (nx.Graph): Supermarket Graph.
+        with_start (bool, optional): Defines if we want to include the entrance and exit of the.
         supermarket at the start/end of the path. Defaults to True.
 
     Returns:
@@ -153,7 +183,30 @@ def get_coordinates(shopping_list: list, graph: nx.Graph, with_start=True)->list
 
     return coordinates
 
-def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):    
+def permute_third_list(first_list, second_list, third_list):
+    """
+    Permutes the third list in the same way as the second list, based on the permutation of the first list.
+
+    Args:
+    first_list (list): The original list.
+    second_list (list): The list that is a permutation of the original list.
+    third_list (list): The list to be permuted based on the permutation of the second list.
+
+    Returns:
+    list: The permuted third list.
+    """
+    # Check if the lengths of all lists are equal
+    assert len(first_list) == len(second_list) or len(second_list) == len(third_list), "All lists must be of equal length"
+
+    # Create a dictionary to store the indices of elements in the second list
+    indices = {element: i for i, element in enumerate(second_list)}
+
+    # Use the indices from the second list's elements to reorder the third list
+    permuted_third_list = [third_list[indices[element]] for element in first_list]
+
+    return permuted_third_list
+
+def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,np.array,float):    
     """Given a list of items finds the shortest path along the supermarket that visits all these items, for more than 11 nodes
     it will compute an approximation. That the path will always start from the first element of the coordinates and end in the last
 
@@ -162,7 +215,7 @@ def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):
         int (np.array): List of items to visit
 
     Returns:
-        (np.array,int): Returns a numpy array containing the order in which the nodes are visited and the length of the path
+        (np.array,np.array,int): Returns two numpy arrays containing items and nodes in the correct order and path length
     """
     coordinates = get_coordinates(items, graph)
     adj_mat = np.empty((len(coordinates),len(coordinates)), dtype = np.float16)
@@ -184,16 +237,18 @@ def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):
             if curr_len<best_perm_len:
                 best_perm = perm
                 best_perm_len = curr_len
+
         best_perm = list(best_perm)
         best_perm = np.array(coordinates)[best_perm]
         best_perm = [tuple(best_perm[i]) for i in range(len(best_perm))]
-        return best_perm,best_perm_len
+        items = permute_third_list(coordinates[1:-1],best_perm[1:-1],items)
+        return items,best_perm,best_perm_len
     
     else: #Greedy algorithm that takes shortest outgoing edge
-        graph = nx.Graph()
+        graph = nx.Graph() #This will be a path graph built from the adj matrix
         graph.add_nodes_from(coordinates)
 
-        visited = [0]*len(coordinates)
+        visited = [0]*len(coordinates) #Keeps track of which nodes where visited in the algorith(all nodes except start and finish at most 2 times)
         flat_indices = np.argsort(adj_mat, axis=None)[:-len(coordinates)-2:2] #Drop diagonal, upper triangular and corners
         row_indices, col_indices = np.unravel_index(flat_indices, adj_mat.shape)
         i = 0
@@ -207,12 +262,13 @@ def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):
             else:    
                 graph.add_edge(coordinates[min(row_index,col_index)],coordinates[max(row_index,col_index)], weight = adj_mat[row_index,col_index])
                 
+                #Important: need to avoid to add cycles or edges that create a path between start and finish
                 if len(graph.edges)<len(coordinates)-1 and nx.has_path(graph, coordinates[0], coordinates[-1]): 
                     graph.remove_edge(coordinates[min(row_index,col_index)],coordinates[max(row_index,col_index)])
                     i += 1
                     continue
 
-                try: #Important: need to avoid to add cycles
+                try: 
                     cycle = nx.find_cycle(graph, orientation="ignore")
                 except nx.NetworkXNoCycle: 
                     visited[row_index] += 1
@@ -225,22 +281,35 @@ def hamiltonian_path(graph: nx.Graph, items:np.array) -> (np.array,float):
         
         path = nx.dijkstra_path(graph, coordinates[0],coordinates[-1])
         path_len = nx.dijkstra_path_length(graph, coordinates[0],coordinates[-1])
+        items = permute_third_list(coordinates[1:-1],path[1:-1],items)
 
-        return path, path_len
+        return items,path, path_len
 
-def create_graph(image: np.array,  section_colors: dict, walkable_colors: dict, other_colors:dict, scale = 1) -> nx.Graph:
+def create_graph(image: np.array, scale = 1) -> nx.Graph:
     """Given an image of an indoor space returns a networkx graph representing the image
 
     Args:
-        image (np.array): Input image
-        section_colors (dict): Dicitonary of the various sections of the supermarkets.
-        walkable_colors (dict): Colors of the areas where people are able to walk, ideally add different color for the entrance and exit
-        other_colors (dict): Colors like walls and the area outside of the supermarket, these colors won't be checked
+        imagedir (np.array): Input imge as array
         scale (int, optional): How many meters does a pixel represent, distances will be measured in meters. Defaults to 1.
 
     Returns:
         nx.Graph: Graph representing the supermarket
     """
+    """
+        Static colors in the image, should follow pattern:
+        section_colors (dict): Dicitonary of the colors of the various sections of the supermarkets.
+        walkable_colors (dict): Colors of the areas where people are able to walk, ideally add different color for the entrance and exit
+        other_colors (dict): Colors like walls and the area outside of the supermarket, these colors won't be checked
+    """
+    section_colors = {'Meat': [255,126,121],'Bakery': [252,168,78],'Dairy' : [250,225,80],
+                    'Frozen' : [78,235,239],'Seafood' : [80,156,218], 'Produce' : [148,214,105],
+                    'Tools': [172,165,142],'Drinks' : [132,92,85],'Grocery' : [124,124,124]}
+
+    walkable_colors = {'Path': [255,255,255],'Start': [237,0,255],'End': [255,0,137]}
+
+    other_colors = {'Wall': [70,70,70],'Background' : [155,173,183]}
+
+
     graph,wrong_coords = get_nodes(image, {**section_colors,**walkable_colors}, other_colors)
     assert len(wrong_coords)==0, f'The image contains some colors not specified on the color list at coordinates:{wrong_coords}' 
     assert len(section_colors)>0, 'You need at least one color for the section_colors'
@@ -267,3 +336,14 @@ def create_graph(image: np.array,  section_colors: dict, walkable_colors: dict, 
                                 graph.add_edge(node_coords,(n_row,n_col), weight = scale)
     return graph
 
+def directions_to_next_item(graph: nx.Graph, image: np.array, current_location: tuple, destination: tuple):
+    """Draws the directions to the given point
+
+    Args:
+        graph (nx.Graph): Input graph
+        image (np.array): Image related to the graph
+        current_location (tuple): Coordinates of the shopper location
+        destination (tuple): Destination of the shopper
+    """
+    path = [nx.dijkstra_path(graph, current_location, destination)]
+    draw_path(image, path,star_pos_color=True)
