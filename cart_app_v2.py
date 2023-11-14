@@ -11,32 +11,22 @@ class MyGroceryListApp:
         self.menubar = tk.Menu(self.root) # create a menu
         self.grocery_list = [] # start with an empty shopping list
 
-        dir = 'ImageToGraph/'
-        imagedir = dir+'Model1.png'
-        image = np.array(Image.open(imagedir).convert('RGB')) #Remember that it reads row by row
-        self.image = image[10:210,10:210,:] #Keep only the supermarket plan inside the frame
-        #node_image = image.reshape(-1,3) #Reshape the image shuch that the inidices are 1D
-        self.graph = create_graph(self.image)
+        self.dir = 'ImageToGraph/' # set a directory for the images
+        self.imagedir = '' # to be set with the use of the buttons
         
-
-
-
         # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
         home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
         home_lb.grid(padx=40, pady=20)
 
-                
-        self.map1_image = PhotoImage(file=dir+'Model1.png')
-        self.map2_image = PhotoImage(file=dir+'Model2.png')
-        # self.map_image_lb = tk.Label(self.home_page, image=self.map_image)
-        # self.map_image_lb.grid()
+        self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
+        self.map2_image = PhotoImage(file=self.dir+'Model2.png') 
 
-        map1_button = tk.Button(self.home_page, image=self.map1_image)
+        map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
         map1_button.grid()
 
-        map2_button = tk.Button(self.home_page, image=self.map2_image)
+        map2_button = tk.Button(self.home_page, image=self.map2_image, command=self.select_supermarket2)
         map2_button.grid()
 
         # Shopping list page
@@ -45,16 +35,16 @@ class MyGroceryListApp:
         list_lb = Label(self.list_page, text="")
         list_lb.grid(pady=0)
 
-        self.item_entry = tk.Entry(self.list_page, width=20) # create an input field
+        self.item_entry = tk.Entry(self.list_page, width=20) # create an input field for user to find
         self.item_entry.grid(row=0, column=0, padx=0, pady=0)
         self.item_entry.bind("<KeyRelease>", self.update_suggestions) # show suggestions during typing
 
         self.suggestions_listbox = tk.Listbox(self.list_page, width=20)
         self.suggestions_listbox.grid(row=0, column=1, padx=10, pady=10)
 
-        suggestions_scrollbar = tk.Scrollbar(self.list_page, orient=tk.VERTICAL, command=self.suggestions_listbox.yview)
-        suggestions_scrollbar.grid(row=0, column=2, padx=0, sticky='ns')
-        self.suggestions_listbox.config(yscrollcommand=suggestions_scrollbar.set)
+        # suggestions_scrollbar = tk.Scrollbar(self.list_page, orient=tk.VERTICAL, command=self.suggestions_listbox.yview)
+        # suggestions_scrollbar.grid(row=0, column=2, padx=0, sticky='ns')
+        # self.suggestions_listbox.config(yscrollcommand=suggestions_scrollbar.set)
 
         self.suggestions_listbox.bind("<Double-1>", self.add_suggestion_to_list) # double click to add item to shopping list
 
@@ -63,8 +53,8 @@ class MyGroceryListApp:
 
         self.listbox.bind("<Double-1>", self.delete_item) # double click to add item to shopping list
 
-        save_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.get_shopping_list)
-        save_button.grid(row=1, column=1)
+        send_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.get_shopping_list)
+        send_button.grid(row=1, column=1)
 
 
         # Route page
@@ -97,6 +87,24 @@ class MyGroceryListApp:
         file_menu.add_command(label="Home", command=lambda: page1.tkraise())
         file_menu.add_command(label="Shopping List", command=lambda: page2.tkraise())
         file_menu.add_command(label="Route", command=lambda: page3.tkraise())
+
+    def select_supermarket1(self):
+        self.imagedir = self.dir + 'Model1.png'
+        self.update_supermarket()
+
+    def select_supermarket2(self):
+        self.imagedir = self.dir + 'Model2.png'
+        self.update_supermarket()
+
+    def update_supermarket(self):
+        # Reload the image and recreate the graph based on the selected supermarket
+        self.image = np.array(Image.open(self.imagedir).convert('RGB'))
+        self.image = self.image[10:210, 10:210, :]
+        self.graph = create_graph(self.image)
+
+        # Redraw the path based on the new supermarket
+        self.update_shopping_list()
+
 
     def load_items(self):
         with open("ImageToGraph/supermarket_items.json", "r") as file:
