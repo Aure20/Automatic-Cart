@@ -19,15 +19,16 @@ class MyGroceryListApp:
         self.home_page.grid(row=0, column=0, sticky="nsew")
         home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
         home_lb.grid(padx=40, pady=20)
+        self.selected_map = ""
 
         self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
         self.map2_image = PhotoImage(file=self.dir+'Model2.png') 
 
-        map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
-        map1_button.grid()
+        self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
+        self.map1_button.grid()
 
-        map2_button = tk.Button(self.home_page, image=self.map2_image, command=self.select_supermarket2)
-        map2_button.grid()
+        self.map2_button = tk.Button(self.home_page, image=self.map2_image, command=self.select_supermarket2)
+        self.map2_button.grid()
 
         # Shopping list page
         self.list_page = Frame(self.root)
@@ -99,6 +100,9 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model1.png'
         self.update_supermarket()
+        self.set_button_color(self.map1_button, 'green')
+        self.set_button_color(self.map2_button, 'SystemButtonFace') # Reset color for the other button
+        
 
     def select_supermarket2(self):
         """
@@ -106,6 +110,16 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model2.png'
         self.update_supermarket()
+        self.set_button_color(self.map2_button, 'green')
+        self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
+        
+
+    def set_button_color(self, button, color):
+        """
+        Sets the background color of a button.
+        """
+        button.config(bg=color)
+        return
 
     def update_supermarket(self):
         """
@@ -162,7 +176,7 @@ class MyGroceryListApp:
     def send_shopping_list(self):
         """
         Base the most optimal path on the shopping list. 
-        Show which item is next on the Route Page
+        Show which item is next on the Route Page.
         """
 
         print(self.grocery_list)
@@ -194,6 +208,7 @@ class MyGroceryListApp:
     def picked_item(self):
         """
         Remove the item from the shopping list when it is picked.
+        Show which item is next on the Route Page.
         """
 
         if self.grocery_list:
