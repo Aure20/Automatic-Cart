@@ -148,9 +148,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(first_program src/first_program.cpp)
-add_dependencies(first_program ${first_program_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(first_program ${catkin_LIBRARIES})
+#add_executable(first_program src/first_program.cpp)
+#add_dependencies(first_program ${first_program_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(first_program ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##

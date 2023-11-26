@@ -20,6 +20,7 @@ Following the structure of Turtlebot3:
 Open a world with the robot:
 `roslaunch automatic_cart cart_house.launch`
 `roslaunch automatic_cart cart_world.launch`
+`roslaunch automatic_cart cart_shop1.launch`
 
 Open SLAM:
 `roslaunch automatic_cart cart_slam.launch slam_methods:=gmapping`
