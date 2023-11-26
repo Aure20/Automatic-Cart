@@ -66,6 +66,9 @@ class MyGroceryListApp:
         self.next_item_label = Label(self.route_page, text="")
         self.next_item_label.grid(row=1, column=0, pady=20)
 
+        picked_button = tk.Button(self.route_page, text="Picked item", font=('Comic Sans MS', 12), command=self.picked_item) # user let's know they picked the current item
+        picked_button.grid(row=2, column=0)
+
         # App startup
         self.home_page.tkraise() # start at home page
 
@@ -180,6 +183,26 @@ class MyGroceryListApp:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
         return items
+    
+    def picked_item(self):
+        """
+        Remove the item from the shopping list when it is picked.
+        """
+
+        if self.grocery_list:
+            self.grocery_list.pop(0)
+        print(self.grocery_list)
+
+        # Update the next item on the route page
+        
+        if self.grocery_list:
+            next_item = self.grocery_list[0]
+            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+        else:
+            self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
+
+        return True
+
 
 
         
