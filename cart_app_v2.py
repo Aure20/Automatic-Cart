@@ -17,7 +17,7 @@ class MyGroceryListApp:
         # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
-        home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
+        home_lb = Label(self.home_page, text="Select a supermarket", font=('Comic Sans MS', 10))
         home_lb.grid(padx=40, pady=20)
         self.selected_map = ""
 
@@ -70,10 +70,16 @@ class MyGroceryListApp:
         picked_button = tk.Button(self.route_page, text="Picked item", font=('Comic Sans MS', 12), command=self.picked_item) # user let's know they picked the current item
         picked_button.grid(row=2, column=0)
 
+        pause_button =  tk.Button(self.route_page, text="Pause", font=('Comic Sans MS', 12)) # pause the shopping cart
+        pause_button.grid(row=3, column=0)
+        continue_button =  tk.Button(self.route_page, text="Continue", font=('Comic Sans MS', 12)) # continue the shopping cart
+        continue_button.grid(row=4, column=0)
+
+
         # App startup
         self.home_page.tkraise() # start at home page
 
-        self.root.geometry("300x500") # size of app window
+        self.root.geometry("310x550") # size of app window
         self.root.title("Supermarket Cart")
         self.root.resizable(False, False) # make it impossible to resize app
 
