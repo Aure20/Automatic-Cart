@@ -182,6 +182,13 @@ class MyGroceryListApp:
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
+        # Display a confirmation message
+        confirmation_label = Label(self.list_page, text="Shopping list sent!", font=('Comic Sans MS', 10))
+        confirmation_label.grid(row=2, column=1)
+
+        # Schedule a function to remove the confirmation message after 3000 milliseconds (3 seconds)
+        self.root.after(3000, lambda: confirmation_label.grid_forget())  
+
         return items
     
     def picked_item(self):
