@@ -17,17 +17,18 @@ class MyGroceryListApp:
         # Home page
         self.home_page = Frame(self.root)
         self.home_page.grid(row=0, column=0, sticky="nsew")
-        home_lb = Label(self.home_page, text="Welcome to your Shopping Cart app", font=('Comic Sans MS', 10))
+        home_lb = Label(self.home_page, text="Select a supermarket", font=('Comic Sans MS', 10))
         home_lb.grid(padx=40, pady=20)
+        self.selected_map = ""
 
         self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
         self.map2_image = PhotoImage(file=self.dir+'Model2.png') 
 
-        map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
-        map1_button.grid()
+        self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
+        self.map1_button.grid()
 
-        map2_button = tk.Button(self.home_page, image=self.map2_image, command=self.select_supermarket2)
-        map2_button.grid()
+        self.map2_button = tk.Button(self.home_page, image=self.map2_image, command=self.select_supermarket2)
+        self.map2_button.grid()
 
         # Shopping list page
         self.list_page = Frame(self.root)
@@ -66,10 +67,19 @@ class MyGroceryListApp:
         self.next_item_label = Label(self.route_page, text="")
         self.next_item_label.grid(row=1, column=0, pady=20)
 
+        picked_button = tk.Button(self.route_page, text="Picked item", font=('Comic Sans MS', 12), command=self.picked_item) # user let's know they picked the current item
+        picked_button.grid(row=2, column=0)
+
+        pause_button =  tk.Button(self.route_page, text="Pause", font=('Comic Sans MS', 12)) # pause the shopping cart
+        pause_button.grid(row=3, column=0)
+        continue_button =  tk.Button(self.route_page, text="Continue", font=('Comic Sans MS', 12)) # continue the shopping cart
+        continue_button.grid(row=4, column=0)
+
+
         # App startup
         self.home_page.tkraise() # start at home page
 
-        self.root.geometry("300x500") # size of app window
+        self.root.geometry("310x550") # size of app window
         self.root.title("Supermarket Cart")
         self.root.resizable(False, False) # make it impossible to resize app
 
@@ -96,6 +106,9 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model1.png'
         self.update_supermarket()
+        self.set_button_color(self.map1_button, 'green')
+        self.set_button_color(self.map2_button, 'SystemButtonFace') # Reset color for the other button
+        
 
     def select_supermarket2(self):
         """
@@ -103,6 +116,16 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model2.png'
         self.update_supermarket()
+        self.set_button_color(self.map2_button, 'green')
+        self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
+        
+
+    def set_button_color(self, button, color):
+        """
+        Sets the background color of a button.
+        """
+        button.config(bg=color)
+        return
 
     def update_supermarket(self):
         """
@@ -159,7 +182,7 @@ class MyGroceryListApp:
     def send_shopping_list(self):
         """
         Base the most optimal path on the shopping list. 
-        Show which item is next on the Route Page
+        Show which item is next on the Route Page.
         """
 
         print(self.grocery_list)
@@ -179,7 +202,35 @@ class MyGroceryListApp:
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
+        # Display a confirmation message
+        confirmation_label = Label(self.list_page, text="Shopping list sent!", font=('Comic Sans MS', 10))
+        confirmation_label.grid(row=2, column=1)
+
+        # Schedule a function to remove the confirmation message after 3000 milliseconds (3 seconds)
+        self.root.after(3000, lambda: confirmation_label.grid_forget())  
+
         return items
+    
+    def picked_item(self):
+        """
+        Remove the item from the shopping list when it is picked.
+        Show which item is next on the Route Page.
+        """
+
+        if self.grocery_list:
+            self.grocery_list.pop(0)
+        print(self.grocery_list)
+
+        # Update the next item on the route page
+        
+        if self.grocery_list:
+            next_item = self.grocery_list[0]
+            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+        else:
+            self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
+
+        return True
+
 
 
         
