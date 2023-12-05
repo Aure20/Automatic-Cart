@@ -4,6 +4,8 @@ import networkx as nx
 from itertools import permutations
 import json 
 import random
+import os
+imagetograph_path = os.path.dirname(os.path.abspath(__file__))
 
 def get_neighbours(x: int, y: int, adjacency_8: bool) -> np.array:
     """Return the 4/8 neighbours of a coordinate.
@@ -72,7 +74,8 @@ def map_evenly(coords, items):
 
     # Map elements from the second array to the first array
     for i in range(len(coords)):
-        mapping.update({coords[i]:items[steps[i]:steps[i+1]]})
+       #print(f'{steps[i]}:{steps[i+1]}')
+       mapping.update({coords[i]:items[int(steps[i]):int(steps[i+1])]})
 
     return mapping
 
@@ -107,7 +110,7 @@ def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,l
                 wrong_colors.append((row,col))
     
     #Now evenly add the items to the correct section and then to the nodes
-    with open('ImageToGraph/supermarket_items.json') as f:
+    with open(os.path.join(imagetograph_path, 'supermarket_items.json')) as f:
         items = json.load(f)
     mapping = {}
     for key in section_coordinates.keys():
@@ -142,9 +145,10 @@ def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = Fals
             im[path[0][0], path[0][1], :] = [255,0,0]
     im = Image.fromarray(im)
     im = im.resize((1000,1000), resample=Image.BOX)
-    if len(filepath) == 0:
-        im.show()
-    else:
+    #if len(filepath) == 0:
+    #    im.show()
+    #else:
+    if len(filepath) != 0:
         im.save(fp=filepath)
 
 def get_coordinates(shopping_list: list, graph: nx.Graph, with_start=True)->list:
