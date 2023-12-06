@@ -145,7 +145,7 @@ def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = Fals
             im[path[0][0], path[0][1], :] = [255,0,0]
     im = Image.fromarray(im)
     im = im.resize((1000,1000), resample=Image.BOX)
-    #if len(filepath) == 0:
+    # if len(filepath) == 0:
     #    im.show()
     #else:
     if len(filepath) != 0:
