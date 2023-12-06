@@ -112,7 +112,7 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model1.png'
         self.update_supermarket()
-        self.set_button_color(self.map1_button, 'green')
+        self.set_button_color(self.map1_button, '#88D498')
         self.set_button_color(self.map2_button, 'SystemButtonFace') # Reset color for the other button
         
 
@@ -122,7 +122,7 @@ class MyGroceryListApp:
         """
         self.imagedir = self.dir + 'Model2.png'
         self.update_supermarket()
-        self.set_button_color(self.map2_button, 'green')
+        self.set_button_color(self.map2_button, '#88D498')
         self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
         
 
