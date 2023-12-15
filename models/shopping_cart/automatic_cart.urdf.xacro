@@ -8,16 +8,16 @@
   
   <!-- Robot params -->
   <xacro:property name="baseshift" value="0.2" />
-  <xacro:property name="wheellen" value="0.025" />
+  <xacro:property name="wheellen" value="0.04" />
   <xacro:property name="wheelrad" value="0.08" />
-  <xacro:property name="wheellen2" value="0.02" />
-  <xacro:property name="wheelrad2" value="0.047" />
+  <xacro:property name="wheellen2" value="0.04" />
+  <xacro:property name="wheelrad2" value="0.08" />
   <xacro:property name="xwheel" value="0.25" />
   <xacro:property name="ywheel" value="0.2" />
   <xacro:property name="zwheel" value="-0.11" />
-  <xacro:property name="xwheel2" value="0.18" />
+  <xacro:property name="xwheel2" value="0.25" />
   <xacro:property name="ywheel2" value="-0.2" />
-  <xacro:property name="zwheel2" value="-0.15" />
+  <xacro:property name="zwheel2" value="-0.11" />
   <xacro:property name="pi" value="3.1415" />
   
   <!-- Sensor params -->
@@ -50,19 +50,19 @@
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${baseshift}"/>
     </visual>
-    <collision>
+    <!-- <collision>
       <geometry>
         <mesh filename="package://automatic_cart/models/shopping_cart/meshes/shopping_cart_base.dae"/>
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${baseshift}"/>
-    </collision>
+    </collision> -->
     <xacro:default_inertial mass="10"/>
   </link>
   
   <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
-    <origin xyz="0.0 0.0 0.0"/>
+    <origin rpy="0 0 ${pi/2}" xyz="0.0 0.0 0.0"/>
   </joint>
   
   <link name="basket">
@@ -209,7 +209,7 @@
 <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_scan"/>
-    <origin xyz="0  ${ywheel2-0.04} ${zwheel2+0.17}" rpy="0 0 0"/>
+    <origin xyz="0  ${-0.24} ${zwheel2+0.17}" rpy="0 0 0"/>
   </joint>
 
   <link name="base_scan">
@@ -258,7 +258,7 @@
         </scan>
         <range>
           <min>0.120</min>
-          <max>3.5</max>
+          <max>50.0</max>
           <resolution>0.015</resolution>
         </range>
         <noise>
@@ -276,7 +276,7 @@
   
   <!-- Gazebo plugin for IMU -->
   <gazebo reference="imu_link">
-    <sensor type="imu" name="imu">
+    <sensor type="imu" name="cart_imu">
       <always_on>true</always_on>
       <visualize>$(arg imu_visual)</visualize>
     </sensor>
@@ -288,7 +288,7 @@
       <alwaysOn>true</alwaysOn>
       <bodyName>imu_link</bodyName>
       <frameName>imu_link</frameName>
-      <topicName>imu</topicName>
+      <topicName>cart_imu</topicName>
       <serviceName>imu_service</serviceName>
       <gaussianNoise>0.0</gaussianNoise>
       <updateRate>0</updateRate>

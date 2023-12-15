@@ -8,6 +8,12 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_path)
 from ImageToGraph.utils import *
+from PIL import Image, ImageTk
+
+# ROS libraries
+import rospy
+from std_msgs.msg import String
+from automatic_cart.msg import App, Backend
 
 class MyGroceryListApp:
 
@@ -70,16 +76,20 @@ class MyGroceryListApp:
         route_lb = Label(self.route_page, text="Your Route", font=('Comic Sans MS', 10))
         route_lb.grid(row=0, column=0, padx=120, pady=20)
 
+        self.route_path_im = self.map1_image
+        self.route_path_lb = Label(self.route_page, image=self.route_path_im)
+        self.route_path_lb.grid(row=1, column=0, pady=0)
+
         self.next_item_label = Label(self.route_page, text="")
-        self.next_item_label.grid(row=1, column=0, pady=20)
+        self.next_item_label.grid(row=2, column=0, pady=20)
 
         picked_button = tk.Button(self.route_page, text="Picked item", font=('Comic Sans MS', 12), command=self.picked_item) # user let's know they picked the current item
-        picked_button.grid(row=2, column=0)
+        picked_button.grid(row=3, column=0)
 
-        pause_button =  tk.Button(self.route_page, text="Pause", font=('Comic Sans MS', 12)) # pause the shopping cart
-        pause_button.grid(row=3, column=0)
-        continue_button =  tk.Button(self.route_page, text="Continue", font=('Comic Sans MS', 12)) # continue the shopping cart
-        continue_button.grid(row=4, column=0)
+        pause_button =  tk.Button(self.route_page, text="Pause", font=('Comic Sans MS', 12), command=self.pause_robot) # pause the shopping cart
+        pause_button.grid(row=4, column=0)
+        continue_button =  tk.Button(self.route_page, text="Continue", font=('Comic Sans MS', 12), command=self.resume_robot) # continue the shopping cart
+        continue_button.grid(row=5, column=0)
 
 
         # App startup
@@ -92,8 +102,14 @@ class MyGroceryListApp:
         self.create_menu(self.home_page, self.list_page, self.route_page)
         self.load_items() # load the supermarket items
 
+        # ROS Configuration
+        rospy.init_node('cart_app', anonymous=True)
+        self.backend_reader()
+        self.backend_reporter()
+
         self.root.mainloop()
 
+    # HOME PAGE
     def create_menu(self, page1, page2, page3):
         """
         Creates a menubar in which you can switch between the different pages.
@@ -123,7 +139,7 @@ class MyGroceryListApp:
         self.imagedir = self.dir + 'Model2.png'
         self.update_supermarket()
         self.set_button_color(self.map2_button, 'green')
-        self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
+        self.set_button_color(self.map1_button, 'gray85') # Reset color for the other button
         
 
     def set_button_color(self, button, color):
@@ -149,6 +165,8 @@ class MyGroceryListApp:
             data = json.load(file)
             self.supermarket_items = [item for category in data.values() for item in category]
 
+
+    # SHOPPING LIST PAGE
     def update_suggestions(self, event):
         """
         Give product suggestions based on the user input.
@@ -197,7 +215,12 @@ class MyGroceryListApp:
         print(self.grocery_list)
 
         paths = [nx.dijkstra_path(self.graph, coordinates[i], coordinates[i+1]) for i in range(len(coordinates)-1)]
-        draw_path(self.image, paths)
+        im = draw_path(self.image, paths, only_return=True)
+        self.paths = paths
+
+        self.route_path_im = ImageTk.PhotoImage(image=im)
+        self.route_path_lb = Label(self.route_page, image= self.route_path_im)
+        self.route_path_lb.grid(row=1, column=0, pady=0)
 
 
         # Update the next item on the route page
@@ -215,8 +238,17 @@ class MyGroceryListApp:
         # Schedule a function to remove the confirmation message after 3000 milliseconds (3 seconds)
         self.root.after(3000, lambda: confirmation_label.grid_forget())  
 
+        # ROS Message
+        app_msg = App()
+        app_msg.status = "Item Path"
+        app_msg.pathx = [p[1] for p in paths[0]]
+        app_msg.pathy = [p[0] for p in paths[0]]
+        self.backend_pub.publish(app_msg)
+
         return items
     
+
+    # ROUTE PAGE
     def picked_item(self):
         """
         Remove the item from the shopping list when it is picked.
@@ -225,20 +257,83 @@ class MyGroceryListApp:
 
         if self.grocery_list:
             self.grocery_list.pop(0)
+            self.paths.pop(0)
+        elif self.paths:
+            self.paths.pop(0)
         print(self.grocery_list)
+        print(self.paths)
 
         # Update the next item on the route page
         
         if self.grocery_list:
             next_item = self.grocery_list[0]
             self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+
+
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
 
+        # ROS Message
+        if self.paths:
+            if self.grocery_list:
+                app_msg = App()
+                app_msg.status = "Next Item"
+                app_msg.pathx = [p[0] for p in self.paths[0]]
+                app_msg.pathy = [p[1] for p in self.paths[0]]
+                self.backend_pub.publish(app_msg)
+            else:
+                app_msg = App()
+                app_msg.status = "Destination"
+                app_msg.pathx = [p[0] for p in self.paths[0]]
+                app_msg.pathy = [p[1] for p in self.paths[0]]
+                self.backend_pub.publish(app_msg)
+
+            im = draw_path(self.image, self.paths, only_return=True)
+            self.route_path_im = ImageTk.PhotoImage(image=im)
+            self.route_path_lb = Label(self.route_page, image= self.route_path_im)
+            self.route_path_lb.grid(row=1, column=0, pady=0)
+            
+        else:
+            # Default image
+            im = self.image.copy()
+            im = im[40:-40, 40:-40]
+            im = Image.fromarray(np.uint8(im))
+            im = im.resize((300,300), resample=Image.BOX)
+
+            # Update image
+            self.route_path_im = ImageTk.PhotoImage(image=im)
+            self.route_path_lb = Label(self.route_page, image= self.route_path_im)
+            self.route_path_lb.grid(row=1, column=0, pady=0)
+
         return True
 
+    def pause_robot(self):
+        # ROS Message
+        app_msg = App()
+        app_msg.status = "Pause"
+        self.backend_pub.publish(app_msg)
+        return True
 
-
+    def resume_robot(self):
+        # ROS Message
+        app_msg = App()
+        app_msg.status = "Resume"
+        self.backend_pub.publish(app_msg)
+        return True
+    
+    # BACKEND COMMUNICATION
+    
+    def backend_reader(self):
+        rospy.Subscriber("cart_backend2app", Backend, self.backend_callback)
         
+        
+    def backend_callback(self, data):
+        print(f"Robot... Status = {data.status}, Location = ({data.x}, {data.y})")
+        self.backend_data = data
+      
+        
+    def backend_reporter(self):
+        self.backend_pub = rospy.Publisher('cart_app2backend', App, queue_size=10)
+    
 
 MyGroceryListApp()

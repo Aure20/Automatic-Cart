@@ -5,6 +5,9 @@ from itertools import permutations
 import json 
 import random
 import os
+import matplotlib.pyplot as plt
+
+
 imagetograph_path = os.path.dirname(os.path.abspath(__file__))
 
 def get_neighbours(x: int, y: int, adjacency_8: bool) -> np.array:
@@ -123,7 +126,7 @@ def get_nodes(image:np.array, map_colors: dict, other_colors: dict)->(nx.Graph,l
     nx.set_node_attributes(graph, mapping, 'item')
     return graph,wrong_colors
 
-def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = False):
+def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = False, only_return = False):
     """Draws a given path on the map.
 
     Args:
@@ -143,13 +146,21 @@ def draw_path(image: np.array, paths: list, filepath = '', star_pos_color = Fals
                 if np.all(im[node[0], node[1], :] == 255) or np.all(im[node[0], node[1], :] == 0): #Color only if walkable or paht
                     im[node[0], node[1], :] = [255,0,0] #Colors in red the neighbourhood of the starting pixel 
             im[path[0][0], path[0][1], :] = [255,0,0]
-    im = Image.fromarray(im)
-    im = im.resize((1000,1000), resample=Image.BOX)
-    #if len(filepath) == 0:
-    #    im.show()
-    #else:
-    if len(filepath) != 0:
-        im.save(fp=filepath)
+    
+    im = im[40:-40, 40:-40]
+    im = Image.fromarray(np.uint8(im))
+    im = im.resize((300,300), resample=Image.BOX)
+    
+    if only_return:
+        return im
+    else:
+        if len(filepath) == 0:
+            im.show(title="path")
+        else:
+        #if len(filepath) != 0:
+            im.save(fp=filepath)
+        return im
+
 
 def get_coordinates(shopping_list: list, graph: nx.Graph, with_start=True)->list:
     """Given a list of items, returns the corresponding coordinates where they are located.
