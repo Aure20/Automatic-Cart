@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 import json
 import random # for testing purposes of the route page
+from PIL import Image, ImageTk
 from ImageToGraph.utils import *
 
 class MyGroceryListApp:
@@ -13,11 +14,16 @@ class MyGroceryListApp:
 
         self.dir = 'ImageToGraph/' # set a directory for the images
         self.imagedir = '' # to be set with the use of the buttons
+
+        # Set colors (color scheme: https://coolors.co/114b5f-1a936f-88d498-c6dabf-f3e9d2)
+        app_background_color = "#F3E9D2"
+        self.root.configure(bg=app_background_color)
+        button_color = "#4CAF50" # green
         
         # Home page
-        self.home_page = Frame(self.root)
+        self.home_page = Frame(self.root, bg=app_background_color)
         self.home_page.grid(row=0, column=0, sticky="nsew")
-        home_lb = Label(self.home_page, text="Select a supermarket", font=('Comic Sans MS', 10))
+        home_lb = Label(self.home_page, text="Select a supermarket", font=('Kozuka Gothic Pro H', 14), bg=app_background_color)
         home_lb.grid(padx=40, pady=20)
         self.selected_map = ""
 
@@ -31,17 +37,21 @@ class MyGroceryListApp:
         self.map2_button.grid()
 
         # Shopping list page
-        self.list_page = Frame(self.root)
+        self.list_page = Frame(self.root, bg=app_background_color)
         self.list_page.grid(row=0, column=0, sticky="nsew")
-        list_lb = Label(self.list_page, text="")
-        list_lb.grid(pady=0)
+
+        self.entry_lb = tk.Label(self.list_page, text="Enter item:", bg=app_background_color, font=('Arial', 8))
+        self.entry_lb.grid(row=0, column=0, pady=10)
 
         self.item_entry = tk.Entry(self.list_page, width=20) # create an input field for user to find
-        self.item_entry.grid(row=0, column=0, padx=0, pady=0)
+        self.item_entry.grid(row=1, column=0, padx=0, pady=5)
         self.item_entry.bind("<KeyRelease>", self.update_suggestions) # show suggestions during typing
 
+
+        self.suggest_lb = tk.Label(self.list_page, text="Click on suggestion to add:", bg=app_background_color, font=('Arial', 8))
+        self.suggest_lb.grid(row=0, column=1, pady=10)
         self.suggestions_listbox = tk.Listbox(self.list_page, width=20)
-        self.suggestions_listbox.grid(row=0, column=1, padx=10, pady=10)
+        self.suggestions_listbox.grid(row=2, column=1, padx=10, pady=10)
 
         # suggestions_scrollbar = tk.Scrollbar(self.list_page, orient=tk.VERTICAL, command=self.suggestions_listbox.yview)
         # suggestions_scrollbar.grid(row=0, column=2, padx=0, sticky='ns')
@@ -50,36 +60,36 @@ class MyGroceryListApp:
         self.suggestions_listbox.bind("<Double-1>", self.add_suggestion_to_list) # double click to add suggested item to shopping list
 
         self.listbox = tk.Listbox(self.list_page, width=20)
-        self.listbox.grid(row=1, column=0, columnspan=1, padx=5, pady=10)
+        self.listbox.grid(row=2, column=0, columnspan=1, padx=5, pady=10)
 
         self.listbox.bind("<Double-1>", self.delete_item) # double click to delete item from shopping list
 
-        send_button = tk.Button(self.list_page, text="Send Shopping List", font=('Comic Sans MS', 12), command=self.send_shopping_list) # send shopping list to route maker
-        send_button.grid(row=1, column=1)
+        send_button = tk.Button(self.list_page, text="Send Shopping List", font=('Kozuka Gothic Pro H', 12),  command=self.send_shopping_list, fg="white", bg="#114B5F") # send shopping list to route maker
+        send_button.grid(row=3, column=1, padx=15)
 
 
         # Route page
-        self.route_page = Frame(self.root) 
+        self.route_page = Frame(self.root, bg=app_background_color) 
         self.route_page.grid(row=0, column=0, sticky="nsew")
-        route_lb = Label(self.route_page, text="Your Route", font=('Comic Sans MS', 10))
+        route_lb = Label(self.route_page, text="Your Route", font=('Kozuka Gothic Pro H', 10), bg=app_background_color)
         route_lb.grid(row=0, column=0, padx=120, pady=20)
 
-        self.next_item_label = Label(self.route_page, text="")
+        self.next_item_label = Label(self.route_page, text="", bg=app_background_color)
         self.next_item_label.grid(row=1, column=0, pady=20)
 
-        picked_button = tk.Button(self.route_page, text="Picked item", font=('Comic Sans MS', 12), command=self.picked_item) # user let's know they picked the current item
+        picked_button = tk.Button(self.route_page, text="Picked item", font=('Kozuka Gothic Pro H', 12), command=self.picked_item, bg=app_background_color) # user let's know they picked the current item
         picked_button.grid(row=2, column=0)
 
-        pause_button =  tk.Button(self.route_page, text="Pause", font=('Comic Sans MS', 12)) # pause the shopping cart
+        pause_button =  tk.Button(self.route_page, text="Pause", font=('Kozuka Gothic Pro H', 12), bg=app_background_color) # pause the shopping cart
         pause_button.grid(row=3, column=0)
-        continue_button =  tk.Button(self.route_page, text="Continue", font=('Comic Sans MS', 12)) # continue the shopping cart
+        continue_button =  tk.Button(self.route_page, text="Continue", font=('Kozuka Gothic Pro H', 12), bg=app_background_color) # continue the shopping cart
         continue_button.grid(row=4, column=0)
 
 
         # App startup
         self.home_page.tkraise() # start at home page
 
-        self.root.geometry("310x550") # size of app window
+        self.root.geometry("310x550") #og size of app window: 310x550
         self.root.title("Supermarket Cart")
         self.root.resizable(False, False) # make it impossible to resize app
 
@@ -104,20 +114,20 @@ class MyGroceryListApp:
         """
         Selects the first supermarket by changing the image directory and updating the supermarket.
         """
+        self.set_button_color(self.map1_button, '#88D498')
+        self.set_button_color(self.map2_button, 'SystemButtonFace') # Reset color for the other button
         self.imagedir = self.dir + 'Model1.png'
         self.update_supermarket()
-        self.set_button_color(self.map1_button, 'green')
-        self.set_button_color(self.map2_button, 'SystemButtonFace') # Reset color for the other button
-        
 
+        
     def select_supermarket2(self):
         """
         Selects the second supermarket by changing the image directory and updating the supermarket.
         """
+        self.set_button_color(self.map2_button, '#88D498')
+        self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
         self.imagedir = self.dir + 'Model2.png'
         self.update_supermarket()
-        self.set_button_color(self.map2_button, 'green')
-        self.set_button_color(self.map1_button, 'SystemButtonFace') # Reset color for the other button
         
 
     def set_button_color(self, button, color):
@@ -189,22 +199,22 @@ class MyGroceryListApp:
         items, coordinates, length = hamiltonian_path(self.graph, list(set(self.grocery_list)))
         self.grocery_list = items
         print(self.grocery_list)
-
+        
         paths = [nx.dijkstra_path(self.graph, coordinates[i], coordinates[i+1]) for i in range(len(coordinates)-1)]
         draw_path(self.image, paths)
 
-
+  
         # Update the next item on the route page
         
         if self.grocery_list:
             next_item = self.grocery_list[0]
-            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Kozuka Gothic Pro H', 10), bg="#F3E9D2")
         else:
-            self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
+            self.next_item_label.config(text="No items in the shopping list", font=('Kozuka Gothic Pro H', 10), bg="#F3E9D2")
 
         # Display a confirmation message
-        confirmation_label = Label(self.list_page, text="Shopping list sent!", font=('Comic Sans MS', 10))
-        confirmation_label.grid(row=2, column=1)
+        confirmation_label = Label(self.list_page, text="Shopping list sent!", font=('Kozuka Gothic Pro H', 10), bg="#F3E9D2")
+        confirmation_label.grid(row=3, column=0)
 
         # Schedule a function to remove the confirmation message after 3000 milliseconds (3 seconds)
         self.root.after(3000, lambda: confirmation_label.grid_forget())  
@@ -225,9 +235,9 @@ class MyGroceryListApp:
         
         if self.grocery_list:
             next_item = self.grocery_list[0]
-            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Comic Sans MS', 10))
+            self.next_item_label.config(text=f"Next Item: {next_item}", font=('Kozuka Gothic Pro H', 10), bg="#F3E9D2")
         else:
-            self.next_item_label.config(text="No items in the shopping list", font=('Comic Sans MS', 10))
+            self.next_item_label.config(text="No items left. You're done!", font=('Kozuka Gothic Pro H', 10), bg="#F3E9D2")
 
         return True
 
