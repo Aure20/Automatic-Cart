@@ -34,7 +34,7 @@ class CartBackend:
         self.image_size = (300.0, 220.0) # Image size
         self.map_origin = (10.0, 10.0) # Upper-left vertex of the map
         self.image_scale = 1.0
-        #self.tflistener = tf.TransformListener()
+        self.tflistener = tf.TransformListener()
 
         # Path
         self.pathx_app = []
@@ -44,7 +44,7 @@ class CartBackend:
     
         # Robot
         self.odom_reader()
-        self.imu_reader()
+        #self.imu_reader()
         #self.tf_reader()
         self.drive_controller()
         
@@ -97,6 +97,7 @@ class CartBackend:
         self.robot.pz = data.pose.pose.position.z*self.factor.pz + self.origin.pz
         self.robot.rx = roll*self.factor.rx + self.origin.rx
         self.robot.ry = pitch*self.factor.ry + self.origin.ry
+        self.robot.rz = yaw*self.factor.rz + self.origin.rz
 
     def imu_reader(self):
     
@@ -231,13 +232,17 @@ class CartBackend:
                         self.pathy_map.pop(0)
 
                     # Pid
-                    if math.sqrt(yaw*yaw) < math.pi/4:
+                    if math.sqrt(yaw*yaw) < math.pi/16:
                         self.drive_control.linear.x = self.P*min(max(distance, 0.2), 1.0) #+ self.I*self.drive_control.linear.x + self.D*(self.linearvel[-1] - self.linearvel[-2])
                     else:
                         self.drive_control.linear.x = 0.0 #+ self.I*self.drive_control.linear.x + self.D*(self.linearvel[-1] - self.linearvel[-2])
                     
                     if math.sqrt(yaw*yaw) > math.pi/16:
-                        self.drive_control.angular.z = max(min(2*self.P*yaw, 5.0), -5.0) #+ self.I*self.drive_control.angular.z + self.D*(self.angularvel[-1] - self.angularvel[-2])
+                        if yaw > 0:
+                            self.drive_control.angular.z = 1.2
+                        elif yaw < 0:
+                            self.drive_control.angular.z = -1.2
+                        #self.drive_control.angular.z = max(min(self.P*yaw, 1.5), -1.5) #+ self.I*self.drive_control.angular.z + self.D*(self.angularvel[-1] - self.angularvel[-2])
                     else:
                         self.drive_control.angular.z = 0.0
 
@@ -264,11 +269,42 @@ class CartBackend:
             rate.sleep()
 
             #print(f"X: {self.robot.px}, Y: {self.robot.py}, Z: {self.robot.pz} | roll: {self.robot.rx}, pitch: {self.robot.ry}, yaw: {self.robot.rz}")
+
+
+    def rot_calibration(self):
+
+    	
+        rate = rospy.Rate(2) # 10hz
+        self.drive_control.angular.z = 1.2
+
+        while not rospy.is_shutdown():
+
+            # App communication
+            bck_msg = Backend()
+            bck_msg.status = self.status
+            bck_msg.x = (self.robot.px/self.image_scale - 0.5 + self.image_size[0]/2 ) - self.map_origin[0]
+            bck_msg.y = (-self.robot.py/self.image_scale - 0.5 + self.image_size[1]/2 ) - self.map_origin[1]
+
+
+            (trans,rot) = self.tflistener.lookupTransform('map', 'base_link', rospy.Time(0))
+            print(f"Map location: trans {trans}, rotation {rot}")
+            print(f"X: {self.robot.px}, Y: {self.robot.py}, Z: {self.robot.pz} | roll: {self.robot.rx}, pitch: {self.robot.ry}, yaw: {self.robot.rz}")
+
+            if self.robot.rz > math.pi/2:
+                self.drive_control.angular.z = 0.0
+
+            # Publish data
+            self.drive_pub.publish(self.drive_control)
+            self.app_pub.publish(bck_msg)
+            rate.sleep()
+
+            
 	
 		
 if __name__ == '__main__':
 
     cart_bcknd = CartBackend()
     cart_bcknd.cycle()
+    #cart_bcknd.rot_calibration()
     
 

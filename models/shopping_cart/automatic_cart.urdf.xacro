@@ -56,7 +56,7 @@
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${baseshift}"/>
     </collision> -->
-    <xacro:default_inertial mass="10"/>
+    <xacro:default_inertial mass="20"/>
   </link>
   
   <joint name="base_joint" type="fixed">
@@ -78,7 +78,7 @@
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${-baseshift}"/>
     </collision>
-    <xacro:default_inertial mass="4"/>
+    <xacro:default_inertial mass="8"/>
   </link>
   
   <joint name="base_to_basket" type="prismatic">
