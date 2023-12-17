@@ -175,7 +175,6 @@ class MyGroceryListApp:
         with open(self.dir + "supermarket_items.json", "r") as file:
             data = json.load(file)
             self.supermarket_items = [item for category in data.values() for item in category]
-            self.lower_supermarket_items = [item.lower() for category in data.values() for item in category]
 
 
     # SHOPPING LIST PAGE
@@ -193,14 +192,14 @@ class MyGroceryListApp:
         same_start_list = []
         part_of_list = []
         
-        for product in self.lower_supermarket_items:
-            if product.startswith(user_input.lower()):
+        for product in self.supermarket_items:
+            if product.lower().startswith(user_input.lower()):
                 same_start_list.append(product)
 
         print(f"Same starts: {same_start_list}")
         
-        for product in self.lower_supermarket_items: # add supermarket item to the suggestion list if the user input is part of the item
-            if user_input.lower() in product and product not in same_start_list:
+        for product in self.supermarket_items: # add supermarket item to the suggestion list if the user input is part of the item
+            if user_input.lower() in product.lower() and product not in same_start_list:
                 part_of_list.append(product)
 
         print(f"Part of: {part_of_list}")
