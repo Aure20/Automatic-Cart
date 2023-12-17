@@ -39,7 +39,7 @@ class MyGroceryListApp:
         self.selected_map = ""
 
         self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
-        self.map2_image = PhotoImage(file=self.dir+'Model2.png') 
+        self.map2_image = PhotoImage(file=self.dir+'Model3.png') 
 
         self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
         self.map1_button.grid()
@@ -149,7 +149,7 @@ class MyGroceryListApp:
         """
         self.set_button_color(self.map2_button, 'green')
         self.set_button_color(self.map1_button, 'gray85') # Reset color for the other button
-        self.imagedir = self.dir + 'Model2.png'
+        self.imagedir = self.dir + 'Model3.png'
         self.update_supermarket()
         
 
@@ -175,6 +175,7 @@ class MyGroceryListApp:
         with open(self.dir + "supermarket_items.json", "r") as file:
             data = json.load(file)
             self.supermarket_items = [item for category in data.values() for item in category]
+            self.lower_supermarket_items = [item.lower() for category in data.values() for item in category]
 
 
     # SHOPPING LIST PAGE
@@ -184,9 +185,30 @@ class MyGroceryListApp:
         """
         user_input = self.item_entry.get()
         self.suggestion_list.delete(0, tk.END) # delete suggestions
-        for product in self.supermarket_items: # add supermarket item to the suggestion list if the user input is part of the item
-            if user_input.lower() in product.lower():
-                self.suggestion_list.insert(tk.END, product)
+
+        # First add products that start with same sequence
+        # Then add products that only contain the same sequence
+
+        user_input_len = len(user_input)
+        same_start_list = []
+        part_of_list = []
+        
+        for product in self.lower_supermarket_items:
+            if product.startswith(user_input.lower()):
+                same_start_list.append(product)
+
+        print(f"Same starts: {same_start_list}")
+        
+        for product in self.lower_supermarket_items: # add supermarket item to the suggestion list if the user input is part of the item
+            if user_input.lower() in product and product not in same_start_list:
+                part_of_list.append(product)
+
+        print(f"Part of: {part_of_list}")
+
+        to_add_list = same_start_list + part_of_list
+
+        for item in to_add_list:
+            self.suggestion_list.insert(tk.END, item)
 
     def add_suggestion_to_list(self, event):
         """
@@ -249,7 +271,6 @@ class MyGroceryListApp:
             self.next_item_label.config(text=f"Next Item: {next_item}", font=('Kozuka Gothic Pro H', 10))
         else:
             self.next_item_label.config(text="No items in the shopping list", font=('Kozuka Gothic Pro H', 10))
-            self.picked_button.config(text="Go to check-out", font=('Kozuka Gothic Pro H', 10))
 
         # Display a confirmation message
 
