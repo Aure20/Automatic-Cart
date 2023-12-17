@@ -39,7 +39,7 @@ class MyGroceryListApp:
         self.selected_map = ""
 
         self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
-        self.map2_image = PhotoImage(file=self.dir+'Model3.png') 
+        self.map2_image = PhotoImage(file=self.dir+'Model4.png') 
 
         self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
         self.map1_button.grid()
@@ -149,7 +149,7 @@ class MyGroceryListApp:
         """
         self.set_button_color(self.map2_button, 'green')
         self.set_button_color(self.map1_button, 'gray85') # Reset color for the other button
-        self.imagedir = self.dir + 'Model3.png'
+        self.imagedir = self.dir + 'Model4.png'
         self.update_supermarket()
         
 
