@@ -38,7 +38,7 @@ class MyGroceryListApp:
         home_lb.grid(padx=40, pady=20)
         self.selected_map = ""
 
-        self.map1_image = PhotoImage(file=self.dir+'Model1.png') # make images applicable to the buttons
+        self.map1_image = PhotoImage(file=self.dir+'Model3.png') # make images applicable to the buttons
         self.map2_image = PhotoImage(file=self.dir+'Model4.png') 
 
         self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
@@ -138,7 +138,7 @@ class MyGroceryListApp:
         """
         self.set_button_color(self.map1_button, 'green')
         self.set_button_color(self.map2_button, 'gray85') # Reset color for the other button
-        self.imagedir = self.dir + 'Model1.png'
+        self.imagedir = self.dir + 'Model3.png'
         self.update_supermarket()
 
         
@@ -303,6 +303,8 @@ class MyGroceryListApp:
         Show which item is next on the Route Page.
         """
 
+        say(f"Collected {self.grocery_list[0]}", to_file=False) # use TTS to inform user about picked item
+
         if self.grocery_list:
             self.grocery_list.pop(0)
             self.paths.pop(0)
@@ -321,10 +323,11 @@ class MyGroceryListApp:
         if self.grocery_list:
             next_item = self.grocery_list[0]
             self.next_item_label.config(text=f"Next Item: {next_item}", font=('Kozuka Gothic Pro H', 10))
-
+            say(f"Next item: {next_item}", to_file=False) # use TTS to inform user about the next item
 
         else:
             self.next_item_label.config(text="Done! Let's pay", font=('Kozuka Gothic Pro H', 10))
+            say(f"That was it! Time to pay", to_file=False)
 
         # ROS Message
         if self.paths:
