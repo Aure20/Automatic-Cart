@@ -5,23 +5,24 @@ from itertools import permutations
 import json 
 import random
 import os
-import pyttsx3
+from gtts import gTTS
+from playsound import playsound
 
 imagetograph_path = os.path.dirname(os.path.abspath(__file__))
-engine = pyttsx3.init()
 
-def say(text: str, to_file:bool = True):
+
+def say(text: str, to_file:bool=True):
     """Say or save to audio file a give text
 
     Args:
         text (str): Text to be spoken
         to_file (bool, optional): Decide if to save the file or speak it. Defaults to True.
     """
-    if to_file:
-        engine.save_to_file(text, 'text.mp3')
-    else:
-        engine.say(text)
-    engine.runAndWait()
+    tts = gTTS(text)
+    tts.save('text.mp3')
+    if not to_file:
+        playsound('text.mp3')
+        
 
 def get_neighbours(x: int, y: int, adjacency_8: bool) -> np.array:
     """Return the 4/8 neighbours of a coordinate.
