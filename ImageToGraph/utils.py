@@ -9,6 +9,8 @@ import pyttsx3
 
 imagetograph_path = os.path.dirname(os.path.abspath(__file__))
 engine = pyttsx3.init()
+voices = engine.getProperty('voices')   
+engine.setProperty('voice', voices[1].id)
 
 def say(text: str, to_file:bool = True):
     """Say or save to audio file a give text
