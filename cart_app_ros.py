@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 import json
 import random # for testing purposes of the route page
+import urllib.request
 
 import sys
 import os
@@ -21,10 +22,13 @@ class MyGroceryListApp:
         self.root = tk.Tk()
         self.menubar = tk.Menu(self.root) # create a menu
         self.grocery_list = [] # start with an empty shopping list
-        
-
+   
         self.dir = os.path.join(current_path, 'ImageToGraph/') # set a directory for the images
         self.imagedir = '' # to be set with the use of the buttons
+
+        with open(self.dir + "food_info.json", "r") as file:
+            self.food_info = json.load(file)
+
         
         # Set colors (color scheme: https://coolors.co/114b5f-1a936f-88d498-c6dabf-f3e9d2)
         app_background_color = "#F3E9D2"
@@ -74,6 +78,7 @@ class MyGroceryListApp:
         # suggestions_scrollbar.grid(row=0, column=2, padx=0, sticky='ns')
         # self.suggestion_list.config(yscrollcommand=suggestions_scrollbar.set)
 
+        # self.suggestion_list.bind("<Button-1>", self.display_item)
         self.suggestion_list.bind("<Double-1>", self.add_suggestion_to_list) # double click to add suggested item to shopping list
 
         self.shopping_listbox = tk.Listbox(self.list_page, width=15)
@@ -86,6 +91,9 @@ class MyGroceryListApp:
 
         clear_button = tk.Button(self.list_page, text="Clear List",font=('Kozuka Gothic Pro H', 8), command=self.clear_shopping_list, fg="white", bg="#114B5F") # send shopping list to route maker
         clear_button.grid(row=3, column=0, padx=15)
+
+        # self.img_display = tk.Label(self.list_page)
+        # self.img_display.grid(row=4, column=1)
 
         # Route page
         self.route_page = Frame(self.root, bg=app_background_color) 
@@ -301,6 +309,15 @@ class MyGroceryListApp:
 
         return items
     
+    # def display_item(self, event):
+    #     item = self.suggestion_list.get(self.suggestion_list.curselection())
+    #     print(self.food_info[item]["image_url"][0])
+    #     urllib.request.urlretrieve(self.food_info[item]["image_url"][0], "item.jpg")
+    #     img = Image.open("item.jpg")
+    #     img.show()
+    #     img = PhotoImage(img)
+        
+    #     self.img_display.config(image=img)
 
     # ROUTE PAGE
     def picked_item(self):
