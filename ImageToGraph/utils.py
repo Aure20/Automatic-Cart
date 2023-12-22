@@ -7,6 +7,8 @@ import random
 import os
 from gtts import gTTS
 
+imagetograph_path = os.path.dirname(os.path.abspath(__file__))
+
 
 def say(text: str):
     """Say or save to audio file a give text
