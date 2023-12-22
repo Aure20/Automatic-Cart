@@ -39,7 +39,9 @@ class MyGroceryListApp:
         self.selected_map = ""
 
         self.map1_image = PhotoImage(file=self.dir+'Model3_large.png') # make images applicable to the buttons
+        self.map1_sel_image = PhotoImage(file=self.dir+'Model3_large_sel.png')
         self.map2_image = PhotoImage(file=self.dir+'Model4_large.png') 
+        self.map2_sel_image = PhotoImage(file=self.dir+'Model4_large_sel.png')
 
         self.map1_button = tk.Button(self.home_page, image=self.map1_image, command=self.select_supermarket1)
         self.map1_button.grid()
@@ -136,19 +138,18 @@ class MyGroceryListApp:
         """
         Selects the first supermarket by changing the image directory and updating the supermarket.
         """
-        self.set_button_color(self.map1_button, 'green')
-        self.set_button_color(self.map2_button, 'gray85') # Reset color for the other button
+        self.map1_button.config(image=self.map1_sel_image)
+        self.map2_button.config(image=self.map2_image)
         self.imagedir = self.dir + 'Model3.png'
         self.update_supermarket()
-
         
 
     def select_supermarket2(self):
         """
         Selects the second supermarket by changing the image directory and updating the supermarket.
         """
-        self.set_button_color(self.map2_button, 'green')
-        self.set_button_color(self.map1_button, 'gray85') # Reset color for the other button
+        self.map2_button.config(image=self.map2_sel_image)
+        self.map1_button.config(image=self.map1_image)
         self.imagedir = self.dir + 'Model4.png'
         self.update_supermarket()
         
