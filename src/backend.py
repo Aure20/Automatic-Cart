@@ -3,12 +3,14 @@ import rospy
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, LaserScan
 from automatic_cart.msg import App, Backend
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import math
 #from tf import tfMessage
 import tf
+import tf2_ros
+import tf2_geometry_msgs
 
 class Coordinates:
 
@@ -28,13 +30,18 @@ class CartBackend:
         rospy.init_node('cart_backend', anonymous=True)
 
         # Calibration params
-        self.origin = Coordinates(-73.5, 9.5, 1.0, 0.0, 0.0, 0.0) # Initial robot location wrt image center (oriented to +x)
+        #self.origin = Coordinates(-73.5, 9.5, 1.0, 0.0, 0.0, 0.0) # Initial robot location wrt image center (oriented to +x)
+        #self.factor = Coordinates(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+        #self.robot = Coordinates(-73.5, 9.5, 1.0, 0.0, 0.0, 0.0)
+        self.origin = Coordinates(-41.5, -11.5, 1.0, 0.0, 0.0, 0.0) # Initial robot location wrt image center (oriented to +x)
         self.factor = Coordinates(1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
-        self.robot = Coordinates(-73.5, 9.5, 1.0, 0.0, 0.0, 0.0)
+        self.robot = Coordinates(-41.5, -11.5, 1.0, 0.0, 0.0, 0.0)
         self.image_size = (300.0, 220.0) # Image size
         self.map_origin = (10.0, 10.0) # Upper-left vertex of the map
         self.image_scale = 1.0
-        self.tflistener = tf.TransformListener()
+        #self.tflistener = tf.TransformListener()
+        self.tf_buffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tf_buffer)
 
         # Path
         self.pathx_app = []
@@ -43,9 +50,10 @@ class CartBackend:
         self.pathy_map = []
     
         # Robot
-        self.odom_reader()
+        #self.odom_reader()
         #self.imu_reader()
         #self.tf_reader()
+        self.scan_reader()
         self.drive_controller()
         
         # App
@@ -99,6 +107,37 @@ class CartBackend:
         self.robot.ry = pitch*self.factor.ry + self.origin.ry
         self.robot.rz = yaw*self.factor.rz + self.origin.rz
 
+    def tf_update(self):
+
+        try:
+            # Wait for the transform between "/map" and "/base_footprint" frames
+            data = self.tf_buffer.lookup_transform("map", "base_footprint", rospy.Time(0), rospy.Duration(3.0))
+
+            # It works :,)
+            print("Translation:", data.transform.translation)
+            #print("Rotation:", transform.transform.rotation)
+
+            # Update the status of the robot
+            orientation_list = [data.transform.rotation.x,
+                                data.transform.rotation.y,
+                                data.transform.rotation.z,
+                                data.transform.rotation.w]
+            (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
+
+            self.robot.px = data.transform.translation.x*self.factor.px + self.origin.px
+            self.robot.py = data.transform.translation.y*self.factor.py + self.origin.py
+            self.robot.pz = data.transform.translation.z*self.factor.pz + self.origin.pz
+            self.robot.rx = roll*self.factor.rx + self.origin.rx
+            self.robot.ry = pitch*self.factor.ry + self.origin.ry
+            self.robot.rz = yaw*self.factor.rz + self.origin.rz
+            if self.robot.rz > math.pi: # Convert the range to -pi to pi
+                self.robot.rz = self.robot.rz - 2*math.pi
+
+            print(f"Translation - x: {self.robot.px}, y: {self.robot.py}, z: {self.robot.pz} | Rotation - roll: {self.robot.rx}, pitch: {self.robot.ry}, yaw: {self.robot.rz}")
+
+        except (tf2_ros.LookupException, tf2_ros.ExtrapolationException) as ex:
+            rospy.logwarn(str(ex))
+
     def imu_reader(self):
     
         rospy.Subscriber("cart_imu", Imu, self.imu_callback)
@@ -133,6 +172,18 @@ class CartBackend:
         rospy.loginfo(rospy.get_caller_id() + "Position Z: %f", data.transform.translation.z)
 
     """
+
+    def scan_reader(self):
+    
+        rospy.Subscriber("scan", LaserScan, self.scan_callback)
+        
+        
+    def scan_callback(self, data):
+
+        pass
+        #rospy.loginfo("Received a LaserScan message with %d ranges" % len(data.ranges))
+        #rospy.loginfo(f"Lidar: {data.ranges[100:260]}")
+
         
     def drive_controller(self):
     
@@ -193,8 +244,10 @@ class CartBackend:
 
         while not rospy.is_shutdown():
 
-            #(trans,rot) = self.tflistener.lookupTransform('/map', '/base_link', rospy.Time(0))
+            #(trans,rot) = self.tflistener.lookupTransform('/map', '/base_footprint', rospy.Time(0))
             #print(f"Map location: trans {trans}, rotation {rot}")
+            self.tf_update()
+            
 
             # App communication
             bck_msg = Backend()
@@ -238,10 +291,12 @@ class CartBackend:
                         self.drive_control.linear.x = 0.0 #+ self.I*self.drive_control.linear.x + self.D*(self.linearvel[-1] - self.linearvel[-2])
                     
                     if math.sqrt(yaw*yaw) > math.pi/16:
-                        if yaw > 0:
+                        if yaw > 0.01:
                             self.drive_control.angular.z = 1.2
-                        elif yaw < 0:
+                        elif yaw < -0.01:
                             self.drive_control.angular.z = -1.2
+                        else:
+                            self.drive_control.angular.z = 0.0
                         #self.drive_control.angular.z = max(min(self.P*yaw, 1.5), -1.5) #+ self.I*self.drive_control.angular.z + self.D*(self.angularvel[-1] - self.angularvel[-2])
                     else:
                         self.drive_control.angular.z = 0.0

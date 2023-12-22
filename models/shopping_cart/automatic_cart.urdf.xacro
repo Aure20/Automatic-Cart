@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="automatic_cart" xmlns:xacro="http://ros.org/wiki/xacro">
 
+  <node name="map_to_base_footprint" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 map base_footprint 100" />
+  
+  
   <!-- Colors -->
   <material name="black">
     <color rgba="0 0 0 1"/>
@@ -41,7 +44,7 @@
   </xacro:macro>
   
   <!-- Robot Design -->
-  <link name="base_footprint"/>
+  <link name="base_footprint"><frameName>base_footprint</frameName></link>
   
   <link name="base_link">
     <visual>
@@ -50,6 +53,7 @@
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${baseshift}"/>
     </visual>
+    <frameName>base_link</frameName>
     <!-- <collision>
       <geometry>
         <mesh filename="package://automatic_cart/models/shopping_cart/meshes/shopping_cart_base.dae"/>
@@ -72,6 +76,7 @@
       </geometry>
       <origin rpy="0 0 ${pi}" xyz="0.0 0.0 ${-baseshift}"/>
     </visual>
+    <frameName>basket</frameName>
     <collision>
       <geometry>
         <mesh filename="package://automatic_cart/models/shopping_cart/meshes/shopping_cart_basket.dae"/>
@@ -238,6 +243,20 @@
       <robotNamespace>/</robotNamespace>
     </plugin>
   </gazebo>
+
+  <!-- World -->
+  <!--<gazebo>
+    <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>ground_truth/state</topicName>
+      <gaussianNoise>0.01</gaussianNoise>
+      <frameName>map</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+    </plugin>
+  </gazebo>-->
   
   
  <!-- Gazebo plugin for Lidar -->

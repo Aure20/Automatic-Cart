@@ -18,4 +18,6 @@
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find automatic_cart)/rviz/cart_$(arg slam_methods).rviz"/>
   </group>
+  
+  <node pkg="tf" type="static_transform_publisher" name="cart_gmapping_boradcaster" args="1 0 0 0 0 1 link1_parent link1 100" />
 </launch>
